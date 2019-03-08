@@ -3,7 +3,7 @@
 
 #include "ros/ros.h"
 #include <eigen3/Eigen/Dense>
-#include "HL_ROS_comm.h"
+//#include "HL_ROS_comm.h"
 #include "qualisys/Subject.h"
 
 using namespace Eigen;
@@ -20,7 +20,7 @@ struct MOCAP_STATES{
 
 class ekf{
     private:
-        Vector4d q;
+        
         double dt;
 
         MatrixXd P;
@@ -38,6 +38,9 @@ class ekf{
         Vector3d a_0;
         Vector3d a_b;
 
+	//quaternion
+	Vector4d q;
+
         //Position- vitesse
         Vector3d p;
         Vector3d v;
@@ -48,7 +51,7 @@ class ekf{
         Vector3d omega_bf;
 
         ekf();
-        ~ekf();
+        ~ekf(){};
         void ekfPred(IMU_STATES const &imustate);
         void ekfUpdate(qualisys::Subject mocapstate);
 };

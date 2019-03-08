@@ -1,0 +1,8 @@
+<launch>
+	<node name="processinputs" pkg="controleDrone" type="processinputs" respawn="false" output="screen"/>
+	<node name="controlesimple" pkg="controleDrone" type="controlesimple" respawn="false" output="screen"/>
+	<node name="processoutputs" pkg="controleDrone" type="processoutputs" respawn="false" output="screen"/>
+	<include file="$(find qualisys)/launch/qualisys.launch">
+	</include>
+
+</launch>

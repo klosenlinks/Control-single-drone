@@ -6,6 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   geometry_msgs
+  qualisys
+  mavros
 )
 
 find_package(Eigen3 REQUIRED)
@@ -15,6 +17,8 @@ catkin_package(
   roscpp
   tf
   eigen
+  qualisys
+  mavros
 )
 
 include_directories(

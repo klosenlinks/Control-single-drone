@@ -103,7 +103,7 @@ private:
 	double thetades=0;
 
 	//PD parameters
-	double m=1.477;//cf masse dynamic_model.cpp
+	double m=1.066;//cf masse dynamic_model.cpp
 	double kp1=0;
 	double ki1=0;
 	double kd1=0;

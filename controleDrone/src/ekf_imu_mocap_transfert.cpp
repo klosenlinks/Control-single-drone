@@ -172,6 +172,7 @@ void ekf::ekfUpdate(qualisys::Subject mocapstate){
       p<<mocapstate.position.x,mocapstate.position.y,mocapstate.position.z;
       q<<mocapstate.orientation.w,mocapstate.orientation.x,mocapstate.orientation.y,mocapstate.orientation.z;
       firstInit++;
+	ROS_INFO("%f,%f,%f",p[0],p[1],p[2]);
     }
 
       double norm_q;

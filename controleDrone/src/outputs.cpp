@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "outputs.h"
 
+
 outputprocessor::outputprocessor(const ros::NodeHandle& n): nh(n)
 {
 	thrustSub = nh.subscribe("/thrust",10,&outputprocessor::thrustCallBack,this);
@@ -8,7 +9,7 @@ outputprocessor::outputprocessor(const ros::NodeHandle& n): nh(n)
 	tauySub = nh.subscribe("/tauy",10,&outputprocessor::tauyCallBack,this);
 	tauzSub = nh.subscribe("/tauz",10,&outputprocessor::tauzCallBack,this);
 
-	pwd1Pub = nh.advertise<std_msgs::Float64>("",2);
+	pwdPub = nh.advertise<mavros_msgs::ActuatorControl>("/drone1/mavros/actuator_control",2);
 }
 
 void outputprocessor::thrustCallBack(const std_msgs::Float64::ConstPtr& msg){
@@ -36,16 +37,37 @@ void outputprocessor::tauzCallBack(const std_msgs::Float64::ConstPtr& msg){
 }
 
 void outputprocessor::processOutputs(){
-	pwd1MsgOut.data = sqrt((1/Kpwdt)*((thrustMsgIn.data)/4)+(tauxMsgIn.data/(2*ld))-(tauzMsgIn.data/(4*c))) + 667;
-	pwd2MsgOut.data = sqrt((1/Kpwdt)*((thrustMsgIn.data)/4)-(tauxMsgIn.data/(2*ld))-(tauzMsgIn.data/(4*c))) + 667;
-	pwd3MsgOut.data = sqrt((1/Kpwdt)*((thrustMsgIn.data)/4)-(tauyMsgIn.data/(2*ld))+(tauzMsgIn.data/(4*c))) + 667;
-	pwd4MsgOut.data = sqrt((1/Kpwdt)*((thrustMsgIn.data)/4)+(tauyMsgIn.data/(2*ld))+(tauzMsgIn.data/(4*c))) + 667;
+
+		
+	
+
+	pwdMsgOut.controls[0] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)+(tauxMsgIn.data/(2*ld))-(tauzMsgIn.data/(4*c)))) + 667;
+	pwdMsgOut.controls[1] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)-(tauxMsgIn.data/(2*ld))-(tauzMsgIn.data/(4*c)))) + 667;
+	pwdMsgOut.controls[2] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)-(tauyMsgIn.data/(2*ld))+(tauzMsgIn.data/(4*c)))) + 667;
+	pwdMsgOut.controls[3] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)+(tauyMsgIn.data/(2*ld))+(tauzMsgIn.data/(4*c)))) + 667;
+	
+	
+
+        for (int i=0;i<4;i++){
+            pwdMsgOut.controls[i] = (2*pwdMsgOut.controls[i] - (1075 + 1950))/(1950-1075);
+        }
+	
+	// On borne entre -1 et 1
+	pwdMsgOut.controls[0] = (((pwdMsgOut.controls[0]<-1)?-1:pwdMsgOut.controls[0])>1)?1:pwdMsgOut.controls[0]; 
+	pwdMsgOut.controls[1] = (((pwdMsgOut.controls[1]<-1)?-1:pwdMsgOut.controls[1])>1)?1:pwdMsgOut.controls[1];
+	pwdMsgOut.controls[2] = (((pwdMsgOut.controls[2]<-1)?-1:pwdMsgOut.controls[2])>1)?1:pwdMsgOut.controls[2];
+	pwdMsgOut.controls[3] = (((pwdMsgOut.controls[3]<-1)?-1:pwdMsgOut.controls[3])>1)?1:pwdMsgOut.controls[3];
 
 	//Publish
-	pwd1Pub.publish(pwd1MsgOut);
-	// ...
+	pwdPub.publish(pwdMsgOut);
+	
 }
 
+float outputprocessor::max0x(float x){
+
+	return (x<0)?0:x;
+
+}
 
 int main(int argc, char**argv)
 {

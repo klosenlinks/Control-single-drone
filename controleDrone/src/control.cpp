@@ -44,6 +44,7 @@ void controller::pidgainsCallBack(const std_msgs::Float64MultiArray::ConstPtr& m
 	kd4=pidgainsMsgIn.data[15];
 
 	// [5,0,7,4,0,5,0.05,0.5,4,0,5,0.05,0.5,2,0,4]
+	// [5,1,8,4,0,5,0.05,0.5,4,0,5,0.05,0.5,2,0,4]
 }
 
 void controller::desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)

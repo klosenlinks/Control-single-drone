@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
 #include <cmath>
+#include <mavros_msgs/ActuatorControl.h>
 
 class outputprocessor{
 
@@ -20,13 +21,10 @@ private:
 	ros::Subscriber tauzSub;
 
 	//Publishers
-	ros::Publisher pwd1Pub;
+	ros::Publisher pwdPub;
 
 	//Messages
-	std_msgs::Float64 pwd1MsgOut;
-	std_msgs::Float64 pwd2MsgOut;
-	std_msgs::Float64 pwd3MsgOut;
-	std_msgs::Float64 pwd4MsgOut;
+	mavros_msgs::ActuatorControl pwdMsgOut;
 
 	std_msgs::Float64 thrustMsgIn;
 	std_msgs::Float64 tauxMsgIn;
@@ -37,13 +35,14 @@ private:
 	double Kpwdt = 3.255*pow(10,-6);
 	double Kpwdd = 8*pow(10,-9);
 	double c = Kpwdd/Kpwdt;
-	double ld = 0.2; // A mesurer
+	double ld = 0.17; // A mesurer
 
 
 void thrustCallBack(const std_msgs::Float64::ConstPtr& msg);
 void tauxCallBack(const std_msgs::Float64::ConstPtr& msg);
 void tauyCallBack(const std_msgs::Float64::ConstPtr& msg);
 void tauzCallBack(const std_msgs::Float64::ConstPtr& msg);
+float max0x(float x);
 
 
 };

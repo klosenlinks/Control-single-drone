@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include <nav_msgs/Odometry.h>
+//#include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -17,27 +17,18 @@ ros::Publisher twistPub;
 //Messages
 geometry_msgs::PoseStamped poseMsgOut;
 geometry_msgs::TwistStamped twistMsgOut;
-nav_msgs::Odometry mocapMsgIn;
+qualisys::Subject mocapMsgIn;
 sensor_msgs::Imu imuMsgIn;
 
 //EKF
 ekf kalmann;
-qualisys::Subject mocapstate;
 IMU_STATES imustate; 
 
-void mocapCallBack(const nav_msgs::Odometry::ConstPtr& msg){
+void mocapCallBack(const qualisys::Subject::ConstPtr& msg){
 
 	mocapMsgIn = *msg;
 
-	mocapstate.position.x = mocapMsgIn.pose.pose.position.x;
-	mocapstate.position.y = mocapMsgIn.pose.pose.position.y;
-	mocapstate.position.z = mocapMsgIn.pose.pose.position.z;
-	mocapstate.orientation.x = mocapMsgIn.pose.pose.orientation.x;
-	mocapstate.orientation.y = mocapMsgIn.pose.pose.orientation.y;
-	mocapstate.orientation.z = mocapMsgIn.pose.pose.orientation.z;
-	mocapstate.orientation.w = mocapMsgIn.pose.pose.orientation.w;
-
-	kalmann.ekfupdate(mocapstate);
+	kalmann.ekfUpdate(mocapMsgIn);
 
 	//Messages Out
 	poseMsgOut.pose.position.x = kalmann.p[0];
@@ -45,15 +36,15 @@ void mocapCallBack(const nav_msgs::Odometry::ConstPtr& msg){
 	poseMsgOut.pose.position.z = kalmann.p[2];
 	poseMsgOut.pose.orientation.w = kalmann.q[0];
 	poseMsgOut.pose.orientation.x = kalmann.q[1];
-	poseMsgOut.pose.orientation.w = kalmann.q[2];
-	poseMsgOut.pose.orientation.w = kalmann.q[3];
+	poseMsgOut.pose.orientation.y = kalmann.q[2];
+	poseMsgOut.pose.orientation.z = kalmann.q[3];
 	
 	twistMsgOut.twist.linear.x = kalmann.v[0];
-	twistMsgOut.twist.linear.x = kalmann.v[1];
-	twistMsgOut.twist.linear.x = kalmann.v[2];
+	twistMsgOut.twist.linear.y = kalmann.v[1];
+	twistMsgOut.twist.linear.z = kalmann.v[2];
 	twistMsgOut.twist.angular.x = kalmann.omega_bf[0];
-	twistMsgOut.twist.angular.x = kalmann.omega_bf[1];
-	twistMsgOut.twist.angular.x = kalmann.omega_bf[2];
+	twistMsgOut.twist.angular.y = kalmann.omega_bf[1];
+	twistMsgOut.twist.angular.z = kalmann.omega_bf[2];
 
 	//Publish
 	posePub.publish(poseMsgOut);
@@ -73,7 +64,7 @@ void imuCallBack(const sensor_msgs::Imu::ConstPtr& msg){
 	imustate.AngVelxyz[1] = imuMsgIn.angular_velocity.y;
 	imustate.AngVelxyz[2] = imuMsgIn.angular_velocity.z;
 	 
-	kalmann.ekfPred(imuState);
+	kalmann.ekfPred(imustate);
 
 	//Messages Out
 	poseMsgOut.pose.position.x = kalmann.p[0];
@@ -81,15 +72,15 @@ void imuCallBack(const sensor_msgs::Imu::ConstPtr& msg){
 	poseMsgOut.pose.position.z = kalmann.p[2];
 	poseMsgOut.pose.orientation.w = kalmann.q[0];
 	poseMsgOut.pose.orientation.x = kalmann.q[1];
-	poseMsgOut.pose.orientation.w = kalmann.q[2];
-	poseMsgOut.pose.orientation.w = kalmann.q[3];
+	poseMsgOut.pose.orientation.y = kalmann.q[2];
+	poseMsgOut.pose.orientation.z = kalmann.q[3];
 	
 	twistMsgOut.twist.linear.x = kalmann.v[0];
-	twistMsgOut.twist.linear.x = kalmann.v[1];
-	twistMsgOut.twist.linear.x = kalmann.v[2];
+	twistMsgOut.twist.linear.y = kalmann.v[1];
+	twistMsgOut.twist.linear.z = kalmann.v[2];
 	twistMsgOut.twist.angular.x = kalmann.omega_bf[0];
-	twistMsgOut.twist.angular.x = kalmann.omega_bf[1];
-	twistMsgOut.twist.angular.x = kalmann.omega_bf[2];
+	twistMsgOut.twist.angular.y = kalmann.omega_bf[1];
+	twistMsgOut.twist.angular.z = kalmann.omega_bf[2];
 
 	//Publish
 	posePub.publish(poseMsgOut);
@@ -97,7 +88,7 @@ void imuCallBack(const sensor_msgs::Imu::ConstPtr& msg){
 }
 
 
-}
+
 
 
 int main(int argc, char**argv)
@@ -105,8 +96,8 @@ int main(int argc, char**argv)
         ros::init(argc, argv, "inputs");
         ros::NodeHandle nh;
 
-	mocapSub = nh.subscribe("/qualisys/odom",10,&mocapCallBack,this);
-	imuSub = nh.subscribe("/imustate",10,&imuCallBack,this); // topic ? /drone1/mavros/imu/data_raw ?
+        mocapSub = nh.subscribe("/qualisys/crazy2fly1",10,&mocapCallBack);
+        imuSub = nh.subscribe("/drone1/mavros/imu/data_raw",10,&imuCallBack);
 
 	posePub = nh.advertise<geometry_msgs::PoseStamped>("/pose",2);
 	twistPub = nh.advertise<geometry_msgs::TwistStamped>("/twist",2);
