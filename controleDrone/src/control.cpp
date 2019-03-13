@@ -5,10 +5,6 @@
 
 controller::controller(const ros::NodeHandle& n): nh(n)
 {
-    //Definir l'objectif
-    //xdes=20;
-    //ydes=40;
-    //zdes=60;
     //subscriber
     poseSub = nh.subscribe("/pose",2,&controller::poseCallBack,this);
     desiredposeSub = nh.subscribe("/desiredpose",2,&controller::desiredposeCallBack,this);
@@ -26,25 +22,15 @@ void controller::pidgainsCallBack(const std_msgs::Float64MultiArray::ConstPtr& m
 {
 	pidgainsMsgIn = *msg;	
 
-	kp1=pidgainsMsgIn.data[0];
-	ki1=pidgainsMsgIn.data[1];
-	kd1=pidgainsMsgIn.data[2];
-	kp2=pidgainsMsgIn.data[3];
-	ki2=pidgainsMsgIn.data[4];
-	kd2=pidgainsMsgIn.data[5];
-	k1=pidgainsMsgIn.data[6];
-	k2=pidgainsMsgIn.data[7];
-	kp3=pidgainsMsgIn.data[8];
-	ki3=pidgainsMsgIn.data[9];
-	kd3=pidgainsMsgIn.data[10];
-	k3=pidgainsMsgIn.data[11];
-	k4=pidgainsMsgIn.data[12];
-	kp4=pidgainsMsgIn.data[13];
-	ki4=pidgainsMsgIn.data[14];
-	kd4=pidgainsMsgIn.data[15];
-
-	// [5,0,7,4,0,5,0.05,0.5,4,0,5,0.05,0.5,2,0,4]
-	// [5,1,8,4,0,5,0.05,0.5,4,0,5,0.05,0.5,2,0,4]
+	kpf=pidgainsMsgIn.data[0];
+	kif=pidgainsMsgIn.data[1];
+	kdf=pidgainsMsgIn.data[2];
+	kptauxy=pidgainsMsgIn.data[3];
+	kitauxy=pidgainsMsgIn.data[4]; //inutilisé
+	kdtauxy=pidgainsMsgIn.data[5];
+	kptauz=pidgainsMsgIn.data[6];
+	kitauz=pidgainsMsgIn.data[7]; //inutilisé
+	kdtauz=pidgainsMsgIn.data[8];
 }
 
 void controller::desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
@@ -53,7 +39,6 @@ void controller::desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr&
 	xdes=desiredposeMsgIn.pose.position.x;
 	ydes=desiredposeMsgIn.pose.position.y;
 	zdes=desiredposeMsgIn.pose.position.z;
-	psides=0;
 }
 
 void controller::poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
@@ -64,11 +49,9 @@ void controller::poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
 	x=poseMsgIn.pose.position.x;
 	y=poseMsgIn.pose.position.y;
 	z=poseMsgIn.pose.position.z;
-	tf2::convert(poseMsgIn.pose.orientation, quat);
-	matrixrot.setRotation(quat);
-	
-	matrixrot.getRPY(phi,theta,psi,1);
 
+	orientation_q_ = orientation_q;
+	tf2::convert(poseMsgIn.pose.orientation, orientation_q);
 	
 }
 
@@ -82,74 +65,88 @@ void controller::twistCallBack(const geometry_msgs::TwistStamped::ConstPtr& msg)
 	q=twistMsgIn.twist.angular.y;
 	r=twistMsgIn.twist.angular.z;
 
-	phid = cos(theta)*p + sin(theta)*r;
-	thetad = sin(theta)*tan(phi)*p + q - cos(theta)*tan(phi)*r;
-	psid = -1*(sin(theta)/cos(phi))*p + (cos(theta)/cos(phi))*r;
 }
 
 void controller::spinController()
 {
-    computeThrust();
-    computeTaux();
-    computeTauy();
-    computeTauz();
-    sendToDrone();
+	computeGlobalForces();
+	computeThrust();
+	computeQdes();
+	computeQerr();
+	computeQddes();
+	computeOmegades();
+	computeTorques();
+	sendToDrone();
+    
+}
+
+void controller::computeGlobalForces()
+{
+	errz_ = errz;
+	interrz_ = interrz;
+
+	errz = zdes-z;
+	interrz = 0.005*(errz + errz_)/2 + interrz_;
+	
+	interrz = (interrz<10*kif)?interrz:10*kif;
+
+
+	fx = m*(xdddes + kdf*(xddes-xd) + kpf*(xdes-x));
+	fy = m*(ydddes + kdf*(yddes-yd) + kpf*(ydes-y));
+	fz = m*(zdddes + kdf*(zddes-zd) + kpf*(zdes-z) + kif*(interrz) - G);
 }
 
 void controller::computeThrust()
 {
-    errz_ = errz;
-    interrz_ = interrz;
-
-    errz = zdes-z;
-    interrz = 0.005*(errz + errz_)/2 + interrz_;
-
-    thrust = -1*m*G + kp1*(zdes-z) + kd1*-1*zd + ki1*interrz;
-    thrustMsgOut.data = (thrust < 0)?0:thrust; // si la commande devait etre négative, on eteint les moteurs
+    thrust = sqrt(fx*fx + fy*fy + fz*fz);
+    thrustMsgOut.data = thrust;
 
 }
 
-void controller::computeTaux()
+void controller::computeQdes()
 {
-	phides = -1*atan2(k1*(ydes-y)-k2*yd,1);
-
-	errphi_ = errphi;
-	interrphi_ = interrphi;
-
-	errphi = phides-phi;
-	interrphi = 0.005*(errphi + errphi_)/2 + interrphi_;
+	dir.setValue(1,0,0); // equivalent a poser psides
+	zdrone.setValue(fx/thrust,fy/thrust,fz/thrust);
+	ydrone = zdrone.cross(dir);
+	xdrone = ydrone.cross(zdrone);
+	R.setValue(xdrone.x(),ydrone.x(),zdrone.x(),xdrone.y(),ydrone.y(),zdrone.y(),xdrone.z(),ydrone.z(),zdrone.z());
 	
-	taux = kp2*(phides-phi) + kd2*-1*phid + ki2*interrphi;
-	//taux = -1*(kp2*(ydes-y) + kd2*(-1)*yd);
-	tauxMsgOut.data = taux;
+	R.getRotation(orientation_qdes);
 }
 
-void controller::computeTauy()
+void controller::computeQerr() 
 {
-	thetades = atan2(k3*(xdes-x)-k4*xd,1);
-
-	errtheta_ = errtheta;
-	interrtheta_ = interrtheta;
-
-	errtheta = thetades-theta;
-	interrtheta = 0.005*(errtheta + errtheta_)/2 + interrtheta_;
-
-	tauy = kp3*(thetades-theta) + kd3*-1*thetad +ki3*interrtheta;
-	//tauy = -1*(kp3*(xdes-x) + kd3*(-1)*xd);
-	tauyMsgOut.data = tauy;
+	errorqx = -orientation_qdes.x*orientation_q.w +orientation_qdes.w*orientation_q.x +orientation_qdes.z*orientation_q.y -orientation_qdes.y*orientation_q.z;
+	errorqy = -orientation_qdes.y*orientation_q.w -orientation_qdes.z*orientation_q.x +orientation_qdes.w*orientation_q.y +orientation_qdes.x*orientation_q.z;
+	errorqz = -orientation_qdes.z*orientation_q.w +orientation_qdes.y*orientation_q.x -orientation_qdes.x*orientation_q.y +orientation_qdes.w*orientation_q.z;
 }
 
-void controller::computeTauz()
-{	
-	errpsi_ = errpsi;
-	interrpsi_ = interrpsi;
+void controller::computeQddes()
+{
+	qd1 = (orientation_q.w - orientation_q_.w)/0.005;
+	qd2 = (orientation_q.x - orientation_q_.x)/0.005;
+	qd3 = (orientation_q.y - orientation_q_.y)/0.005;
+	qd4 = (orientation_q.z - orientation_q_.z)/0.005;
+}
 
-	errpsi = psides-psi;
-	interrpsi = 0.005*(errpsi + errpsi_)/2 + interrpsi_;
+void controller::computeOmegades()
+{
+	pdes = 2*(-orientation_qdes.x*orientation_q.w +orientation_qdes.w*orientation_q.x +orientation_qdes.z*orientation_q.y -orientation_qdes.y*orientation_q.z);
+	qdes = 2*(-orientation_qdes.y*orientation_q.w -orientation_qdes.z*orientation_q.x +orientation_qdes.w*orientation_q.y +orientation_qdes.x*orientation_q.z);
+	rdes = 2*(-orientation_qdes.z*orientation_q.w +orientation_qdes.y*orientation_q.x -orientation_qdes.x*orientation_q.y +orientation_qdes.w*orientation_q.z);
+}
 
-	tauz = kp4*(psides-psi) + kd4*-1*psid + ki4*interrpsi;
+void controller::computeTorques()
+{
+	taux = kdtauxy*(pdes-p) + kptauxy*errorqx;
+	tauy = kdtauxy*(qdes-q) + kptauxy*errorqy;
+	tauz = kdtauz*(rdes-r) + kptauz*errorqz;
+
+	tauxMsgOut.data = taux;
+	tauyMsgOut.data = tauy;
 	tauzMsgOut.data = tauz;
 }
+
 
 
 void controller::sendToDrone()
