@@ -1,4 +1,4 @@
 <launch>
-	<node name="controlesimple" pkg="TP_Drone" type="controlesimple" respawn="false"/>
-	<node name="modeldyn" pkg="TP_Drone" type="modeldyn" respawn="false"/>
+	<node name="controlesimple" pkg="controleDrone" type="controlesimple" respawn="false" output="screen"/>
+	<node name="modeldyn" pkg="controleDrone" type="modeldyn" respawn="false" output="screen"/>
 </launch>

@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include "stdio.h"
 //#include "Eigen/Eigen"
+#include <iostream>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -8,7 +9,7 @@
 #include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <std_msgs/Float64MultiArray.h>
-
+#include <geometry_msgs/Quaternion.h>//
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -34,6 +35,7 @@ private:
 	ros::Publisher tauxPub;
 	ros::Publisher tauyPub;
 	ros::Publisher tauzPub;
+	ros::Publisher errorQuaterPub;
 	
 	//Published variables
 	double thrust=0;
@@ -129,6 +131,8 @@ private:
 	geometry_msgs::TwistStamped twistMsgIn;
 	geometry_msgs::PoseStamped desiredposeMsgIn;
 	std_msgs::Float64MultiArray pidgainsMsgIn;
+
+	geometry_msgs::Quaternion errorQuater;	
 
 	std_msgs::Float64 thrustMsgOut;
 	std_msgs::Float64 tauxMsgOut;
