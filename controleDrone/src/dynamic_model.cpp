@@ -62,51 +62,69 @@ void dynamicModel::computePosition()
 
 	//Then we calculate the pose and its derivatives
 	xdd = ax*thrust/mass;
-	xd = 0.005*(xdd+xdd_)/2 + xd_;
-	x = 0.005*(xd+xd_)/2 + x_;
+        xd = 0.005*(xdd+xdd_)*0.5 + xd_;
+        x = 0.005*(xd+xd_)*0.5 + x_;
 
 	ydd = ay*thrust/mass;
-	yd = 0.005*(ydd+ydd_)/2 + yd_;
-	y = 0.005*(yd+yd_)/2 + y_;
+        yd = 0.005*(ydd+ydd_)*0.5 + yd_;
+        y = 0.005*(yd+yd_)*0.5 + y_;
 
 	zdd = G + az*thrust/mass;
-	zd = 0.005*(zdd+zdd_)/2 + zd_;
-	z = 0.005*(zd+zd_)/2 + z_;
+        zd = 0.005*(zdd+zdd_)*0.5 + zd_;
+        z = 0.005*(zd+zd_)*0.5 + z_;
 
     
 }
 
 void dynamicModel::computeOrientation()
 {
-	
-	pd_ = pd;
+        q0_=q0;
+        q1_=q1;
+        q2_=q2;
+        q3_=q3;
+
+        q0d_=q0d;
+        q1d_=q1d;
+        q2d_=q2d;
+        q3d_=q3d;
+
+        pd_ = pd;
 	p_ = p;
-	phi_ = phi;
 
 	qd_ = qd;
 	q_ = q;
-	theta_ = theta;
 
 	rd_ = rd;
 	r_ = r;
-	psi_ = psi;
 
 	pd = (1/ixx)*taux;
-	p = 0.005*(pd+pd_)/2 + p_;	
+        p = 0.005*(pd+pd_)*0.5 + p_;
 
 	qd = (1/iyy)*tauy;
-	q = 0.005*(qd+qd_)/2 + q_;
+        q = 0.005*(qd+qd_)*0.5 + q_;
 
 	rd = (1/izz)*tauz;
-	r = 0.005*(rd+rd_)/2 + r_;
+        r = 0.005*(rd+rd_)*0.5 + r_;
 
-	phid = cos(theta)*p + sin(theta)*r;
-	thetad = sin(theta)*tan(phi)*p + q - cos(theta)*tan(phi)*r;
-	psid = -1*(sin(theta)/cos(phi))*p + (cos(theta)/cos(phi))*r;
+        q0d = 0.5*(-q1*p-q2*q-q3*r) ;
+        q1d =0.5*(q0*p-q3*q+q2*r);
+        q2d =0.5*(q3*p+q0*q-q1*r);
+        q3d =0.5*(-q2*p+q1*q+q0*r);
 
-	phi = 0.005*(phid+phid_)/2 + phi_;
-	theta = 0.005*(thetad+thetad_)/2 + theta_;
-	psi = 0.005*(psid+psid_)/2 + psi_;
+        //std::cout<<"q1d : "<<q1d<<std::endl;
+        //std::cout<<"p : "<<p<<std::endl;
+
+        q0 = 0.005*(q0d+q0d_)*0.5 + q0_;
+        q1 = 0.005*(q1d+q1d_)*0.5 + q1_;
+        q2 = 0.005*(q2d+q2d_)*0.5 + q2_;
+        q3 = 0.005*(q3d+q3d_)*0.5 + q3_;
+
+        float n = sqrt(q0*q0+q1*q1+q2*q2+q3*q3);
+
+        q0 = q0/n;
+        q1 = q1/n;
+        q2 = q2/n;
+        q3 = q3/n;
 
 	//orientation.setEuler(phi, theta, psi);
 	//orientation.normalize();
@@ -116,9 +134,9 @@ void dynamicModel::computeOrientation()
 
 void dynamicModel::computeRMatrix()
 {
-	ax = cos(psi)*sin(theta)+cos(theta)*sin(phi)*sin(psi);
-	ay = sin(psi)*sin(theta)-cos(theta)*sin(phi)*cos(psi);
-	az = cos(phi)*cos(theta);
+        ax = 2*q0*q2+2*q1*q3;
+        ay = -2*q0*q1+2*q2*q3;
+        az = q0*q0-q1*q1-q2*q2+q3*q3;
 }
 
 void dynamicModel::sendPose()
@@ -128,12 +146,14 @@ void dynamicModel::sendPose()
 	poseMsgOut.pose.position.x=x;
 	poseMsgOut.pose.position.y=y;  
    	poseMsgOut.pose.position.z=z;
-	//poseMsgOut.pose.orientation.x=phi;
-	//poseMsgOut.pose.orientation.y=theta;
-	//poseMsgOut.pose.orientation.z=psi;
-	//poseMsgOut.pose.orientation.w=0;
-	orientation.setRPY(phi,theta,psi);
-	tf2::convert(orientation,poseMsgOut.pose.orientation);
+        poseMsgOut.pose.orientation.x=q1;
+        poseMsgOut.pose.orientation.y=q2;
+        poseMsgOut.pose.orientation.z=q3;
+        poseMsgOut.pose.orientation.w=q0;
+        //orientation.setRPY(phi,theta,psi);
+
+
+        //tf2::convert(orientation,poseMsgOut.pose.orientation);
 
    	posePub.publish(poseMsgOut);
 }
@@ -166,7 +186,7 @@ int main(int argc, char**argv)
         ros::NodeHandle nh;
 	
 	//On suppose que le drone admet deux plans de symétrie. I est donc diagonale
-        float m = 1.477;//cf masse control.h
+        float m = 1.066;//cf masse control.h
 	float ixx = 0.1152;
 	float iyy = 0.1152;
 	float izz = 0.218;

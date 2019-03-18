@@ -41,10 +41,11 @@ void outputprocessor::processOutputs(){
 		
 	
 
-	pwdMsgOut.controls[0] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)+(tauxMsgIn.data/(2*ld))-(tauzMsgIn.data/(4*c)))) + 667;
-	pwdMsgOut.controls[1] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)-(tauxMsgIn.data/(2*ld))-(tauzMsgIn.data/(4*c)))) + 667;
-	pwdMsgOut.controls[2] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)-(tauyMsgIn.data/(2*ld))+(tauzMsgIn.data/(4*c)))) + 667;
-	pwdMsgOut.controls[3] = sqrt(max0x((1/Kpwdt)*((thrustMsgIn.data)/4)+(tauyMsgIn.data/(2*ld))+(tauzMsgIn.data/(4*c)))) + 667;
+        pwdMsgOut.controls[0] = sqrt(max0x((1.0/Kpwdt)*((thrustMsgIn.data/4.0)-(tauxMsgIn.data/(2.0*ld))-(tauzMsgIn.data/(4.0*c))))) + 667.0;
+        pwdMsgOut.controls[1] = sqrt(max0x((1.0/Kpwdt)*((thrustMsgIn.data/4.0)+(tauxMsgIn.data/(2.0*ld))-(tauzMsgIn.data/(4.0*c))))) + 667.0;
+        pwdMsgOut.controls[2] = sqrt(max0x((1.0/Kpwdt)*((thrustMsgIn.data/4.0)-(tauyMsgIn.data/(2.0*ld))+(tauzMsgIn.data/(4.0*c))))) + 667.0;
+        pwdMsgOut.controls[3] = sqrt(max0x((1.0/Kpwdt)*((thrustMsgIn.data/4.0)+(tauyMsgIn.data/(2.0*ld))+(tauzMsgIn.data/(4.0*c))))) + 667.0;
+
 	
 	
 
@@ -53,14 +54,57 @@ void outputprocessor::processOutputs(){
         }
 	
 	// On borne entre -1 et 1
-	pwdMsgOut.controls[0] = (((pwdMsgOut.controls[0]<-1)?-1:pwdMsgOut.controls[0])>1)?1:pwdMsgOut.controls[0]; 
-	pwdMsgOut.controls[1] = (((pwdMsgOut.controls[1]<-1)?-1:pwdMsgOut.controls[1])>1)?1:pwdMsgOut.controls[1];
-	pwdMsgOut.controls[2] = (((pwdMsgOut.controls[2]<-1)?-1:pwdMsgOut.controls[2])>1)?1:pwdMsgOut.controls[2];
-	pwdMsgOut.controls[3] = (((pwdMsgOut.controls[3]<-1)?-1:pwdMsgOut.controls[3])>1)?1:pwdMsgOut.controls[3];
-
+	pwdMsgOut.controls[0] = born(pwdMsgOut.controls[0]); 
+	pwdMsgOut.controls[1] = born(pwdMsgOut.controls[1]);
+	pwdMsgOut.controls[2] = born(pwdMsgOut.controls[2]);
+	pwdMsgOut.controls[3] = born(pwdMsgOut.controls[3]);
+	
 	//Publish
 	pwdPub.publish(pwdMsgOut);
+
+	/*
+	double foo1;
+	double foo2;
+	double foo3;
+	double foo4;
+
+	foo1 = 0.5*(pwdMsgOut.controls[0]*(1950-1075)+1075+1950);
+	foo2 = 0.5*(pwdMsgOut.controls[1]*(1950-1075)+1075+1950);
+	foo3 = 0.5*(pwdMsgOut.controls[2]*(1950-1075)+1075+1950);
+	foo4 = 0.5*(pwdMsgOut.controls[3]*(1950-1075)+1075+1950);
+
+	foo1 = pow(foo1-667,2)*Kpwdt;
+	foo2 = pow(foo2-667,2)*Kpwdt;
+	foo3 = pow(foo3-667,2)*Kpwdt;
+	foo4 = pow(foo4-667,2)*Kpwdt;
+        
+	double foothrust;
+	double footaux;
+	double footauy;
+	double footauz;
+
+	foothrust = foo1+foo2+foo3+foo4;
+	footaux = ld*(foo1-foo2);
+	footauy = ld*(foo4-foo3);
+	footauz = c*(foo3+foo4-foo1-foo2);
+
+	std::cout<<"calc thrust = "<<foothrust<<std::endl;
+	std::cout<<"calc taux = "<<footaux<<std::endl;
+	std::cout<<"calc tauy = "<<footauy<<std::endl;
+	std::cout<<"calc tauz = "<<footauz<<std::endl;
+	*/
 	
+}
+
+double born(double num) {
+	double res = num;
+	if(num < -1){
+		res = -1;	
+	}	
+	if(num > 1){
+		res = 1;	
+	}
+	return res;
 }
 
 float outputprocessor::max0x(float x){

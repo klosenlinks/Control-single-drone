@@ -26,6 +26,12 @@ public:
 	controller(const ros::NodeHandle& n); //constructeur
 	~controller(){};// destructeur
 	void spinController();
+        void sendToDrone();
+
+        std_msgs::Float64 thrustMsgOut;
+        std_msgs::Float64 tauxMsgOut;
+        std_msgs::Float64 tauyMsgOut;
+        std_msgs::Float64 tauzMsgOut;
 
 private:
 
@@ -50,8 +56,8 @@ private:
 	ros::Subscriber pidgainsSub;
 
 	//measures obtained from subscribers
-	tf2::Quaternion orientation_q;
-	tf2::Quaternion orientation_q_ = tf2::Quaternion(0,0,0,1);
+        tf2::Quaternion orientation_q  = tf2::Quaternion(0,0,0,1);
+        tf2::Quaternion orientation_qdes_ = tf2::Quaternion(0,0,0,1);
 
 	double x=0;
 	double y=0;
@@ -104,10 +110,10 @@ private:
 	double errorqy;
 	double errorqz;
 
-	double qd1;
-	double qd2;
-	double qd3;
-	double qd4;
+        double qd1des;
+        double qd2des;
+        double qd3des;
+        double qd4des;
 
 	double pdes;
 	double qdes;
@@ -134,10 +140,7 @@ private:
 
 	geometry_msgs::Quaternion errorQuater;	
 
-	std_msgs::Float64 thrustMsgOut;
-	std_msgs::Float64 tauxMsgOut;
-	std_msgs::Float64 tauyMsgOut;
-	std_msgs::Float64 tauzMsgOut;
+
 
 	void poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg); //récupère la position et l'orientation du drone
 	void twistCallBack(const geometry_msgs::TwistStamped::ConstPtr& msg);
@@ -151,8 +154,9 @@ private:
 	void computeQddes();
 	void computeOmegades();
 	void computeTorques();
-	void sendToDrone();
+
 	
 
 };
 
+double saturation(double x, double min, double max);

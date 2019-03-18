@@ -87,6 +87,27 @@ private:
 	float r_=0;
 	float rd_=0;
 	
+        //quaternions
+        float q0=1.0;
+        float q1=0;
+        float q2=0;
+        float q3=0;
+
+        float q0_=1.0;
+        float q1_=0;
+        float q2_=0;
+        float q3_=0;
+
+        float q0d=0;
+        float q1d=0;
+        float q2d=0;
+        float q3d=0;
+
+        float q0d_=0;
+        float q1d_=0;
+        float q2d_=0;
+        float q3d_=0;
+
 	//Rotation matrix
 	//We only need the last column (ax,ay,az) here
 	float ax = 0;

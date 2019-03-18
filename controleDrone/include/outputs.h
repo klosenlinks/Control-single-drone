@@ -46,3 +46,5 @@ float max0x(float x);
 
 
 };
+
+double born(double num);
