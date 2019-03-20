@@ -93,8 +93,6 @@ void controller::computeGlobalForces()
 	interrz = (interrz<1*kif)?interrz:1*kif;
         interrz = (interrz>-1*kif)?interrz:-1*kif;
 
-
-
 	fx = m*(xdddes + kdf*(xddes-xd) + kpf*(xdes-x));
 	fy = m*(ydddes + kdf*(yddes-yd) + kpf*(ydes-y));
 	fz = m*(zdddes + kdf*(zddes-zd) + kpf*(zdes-z) + kif*(interrz) - G);
@@ -106,7 +104,7 @@ void controller::computeThrust()
     thrust = sqrt(fx*fx + fy*fy + fz*fz);
     thrust = saturation(thrust,2,20);
     thrustMsgOut.data = thrust;
-//    std::cout<<"fx="<<fx<<"; fy="<<fy<<"; fz="<<fz<<std::endl;
+   // std::cout<<thrust<<std::endl;
 }
 
 void controller::computeQdes()

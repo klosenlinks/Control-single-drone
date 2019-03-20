@@ -10,6 +10,6 @@
   </include>
 
 <!-- Spawn the drone into Gazebo -->
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find TP_Drone)/urdf/drone.urdf -urdf -z 1 -model drone"/>
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find controleDrone)/urdf/drone.urdf -urdf -z 1 -model drone"/>
 
 </launch>

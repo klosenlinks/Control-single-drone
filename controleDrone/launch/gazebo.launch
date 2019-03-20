@@ -1,0 +1,19 @@
+<launch>
+
+<!-- Launch an empty world into Gazebo-->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  </include>
+
+<!-- Spawn the drone into Gazebo -->
+   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen" args="-file $(find controleDrone)/urdf/drone.urdf -urdf -z 1 -model myDrone"/>
+
+<!-- launch our control node-->
+   <node name="controlesimple" pkg="controleDrone" type="controlesimple" respawn="false" output="screen"/>
+
+<!-- Ne sert sûrement à rien vu que gazebo gère le modèle du drone-->
+   <!--<node name="modeldyn" pkg="controleDrone" type="modeldyn" respawn="false" output="screen"/>-->
+
+<!-- launch our gazebo node-->
+   <node name="link_gazebo" pkg="controleDrone" type="link_gazebo" respawn="false" output="screen"/>
+
+</launch>

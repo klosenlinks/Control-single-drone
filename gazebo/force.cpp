@@ -7,7 +7,7 @@ void sendForce()
 
    //on définit ici les caractéristiques de notre body wrench
 
-          body_name = "base_link";//myDrone ?//nom du robot ou nom du link?
+          body_name = "myDrone::base_link";//myDrone ?//nom du robot ou nom du link?
           applyBodyWrench.request.body_name = body_name; //je sais pas si le request est nécessaire
 
           reference_frame = "base_link";

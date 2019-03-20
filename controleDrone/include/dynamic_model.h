@@ -130,10 +130,10 @@ private:
 	geometry_msgs::PoseStamped poseMsgOut;
 	geometry_msgs::TwistStamped twistMsgOut;
 
-	std_msgs::Float64 thrustMsgIn;
-	std_msgs::Float64 tauxMsgIn;
-	std_msgs::Float64 tauyMsgIn;
-	std_msgs::Float64 tauzMsgIn;
+	std_msgs::Float64 thrustMsgIn;//
+	std_msgs::Float64 tauxMsgIn;//
+	std_msgs::Float64 tauyMsgIn;//
+	std_msgs::Float64 tauzMsgIn;//
 	
 	//Callbacks
 	void thrustCallBack(const std_msgs::Float64::ConstPtr& msg);

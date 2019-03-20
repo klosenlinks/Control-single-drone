@@ -33,6 +33,7 @@ add_executable(controlesimple src/control.cpp)
 ## add_executable(setpoint_publisher src/desiredposepub.cpp)
 add_executable(processinputs src/inputs.cpp src/ekf_imu_mocap_transfert)
 add_executable(processoutputs src/outputs.cpp)
+add_executable(link_gazebo src/link_gazebo.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(modeldyn
@@ -45,6 +46,9 @@ target_link_libraries(processinputs
    ${catkin_LIBRARIES}
  )
 target_link_libraries(processoutputs
+   ${catkin_LIBRARIES}
+ )
+target_link_libraries(link_gazebo
    ${catkin_LIBRARIES}
  )
 ##target_link_libraries(setpoint_publisher
