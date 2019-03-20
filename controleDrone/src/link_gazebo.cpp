@@ -50,8 +50,10 @@ void linkGazebo::sendForce()
 
     applyBodyWrench.request.reference_frame ="myDrone::base_link";
 
-    ros::Duration five_seconds(0.005);
-    applyBodyWrench.request.duration= five_seconds;
+    ros::Duration duration(1000000000);
+    applyBodyWrench.request.duration= duration;
+
+
 
     force.x=0;
     force.y=0;

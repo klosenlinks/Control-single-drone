@@ -10,9 +10,6 @@
 <!-- launch our control node-->
    <node name="controlesimple" pkg="controleDrone" type="controlesimple" respawn="false" output="screen"/>
 
-<!-- Ne sert sûrement à rien vu que gazebo gère le modèle du drone-->
-   <!--<node name="modeldyn" pkg="controleDrone" type="modeldyn" respawn="false" output="screen"/>-->
-
 <!-- launch our gazebo node-->
    <node name="link_gazebo" pkg="controleDrone" type="link_gazebo" respawn="false" output="screen"/>
 

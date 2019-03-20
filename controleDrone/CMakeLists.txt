@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   qualisys
   mavros
+	gazebo_msgs
 )
 
 find_package(Eigen3 REQUIRED)
