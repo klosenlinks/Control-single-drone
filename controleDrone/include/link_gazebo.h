@@ -73,4 +73,17 @@ private:
 	void tauyCallBack(const std_msgs::Float64::ConstPtr& msg);
 	void tauzCallBack(const std_msgs::Float64::ConstPtr& msg);
 
+
+	//quaternions
+        float q0=1.0;
+        float q1=0;
+        float q2=0;
+        float q3=0;
+
+	//Rotation matrix
+	//We only need the last column (ax,ay,az) here
+	float ax = 0;
+	float ay = 0;
+	float az = 0;
+
 };

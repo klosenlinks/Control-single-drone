@@ -48,16 +48,19 @@ void linkGazebo::sendForce()
 
     applyBodyWrench.request.body_name = "myDrone::base_link";
 
-    applyBodyWrench.request.reference_frame ="myDrone::base_link";
+    applyBodyWrench.request.reference_frame ="";//only applies to world frame
 
     ros::Duration duration(1000000000);
     applyBodyWrench.request.duration= duration;
 
+    //passage du repère du drone au repère monde (à cause de gazebo qui envoie la force que dans le repère monde)
+    ax = 2*q0*q2+2*q1*q3;
+    ay = -2*q0*q1+2*q2*q3;
+    az = q0*q0-q1*q1-q2*q2+q3*q3;
 
-
-    force.x=0;
-    force.y=0;
-    force.z=thrustMsgIn;
+    force.x=thrustMsgIn*ax;
+    force.y=thrustMsgIn*ay;
+    force.z=thrustMsgIn*az;
 
     torque.x=tauxMsgIn;
     torque.y=tauyMsgIn;
@@ -84,15 +87,21 @@ void linkGazebo::sendModelState()
 
     getModelStateClient.call(getModelState);
 
+    //On récupère l'orientation du drone pour envoyer la force dans le repère monde (pb de gazebo))
+    q0=getModelState.response.pose.orientation.w;
+    q1=getModelState.response.pose.orientation.x;
+    q2=getModelState.response.pose.orientation.y;
+    q3=getModelState.response.pose.orientation.z;
+
     //on publie la pose calculée par Gazebo
     poseMsgOut.header.stamp = ros::Time::now();
-    poseMsgOut.pose = getModelState.response.pose;//response
+    poseMsgOut.pose = getModelState.response.pose;
 
     posePub.publish(poseMsgOut);
 
     //on publie le twist calculé par Gazebo
     twistMsgOut.header.stamp = ros::Time::now();
-    twistMsgOut.twist = getModelState.response.twist;//response
+    twistMsgOut.twist = getModelState.response.twist;
 
     twistPub.publish(twistMsgOut);
 }
