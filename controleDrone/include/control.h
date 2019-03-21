@@ -42,6 +42,7 @@ private:
 	ros::Publisher tauyPub;
 	ros::Publisher tauzPub;
 	ros::Publisher errorQuaterPub;
+	ros::Publisher quaterdesPub;
 	
 	//Published variables
 	double thrust=0;
@@ -139,7 +140,8 @@ private:
 	std_msgs::Float64MultiArray pidgainsMsgIn;
 
 	geometry_msgs::Quaternion errorQuater;	
-
+	geometry_msgs::Quaternion quaterdes;
+	
 
 
 	void poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg); //récupère la position et l'orientation du drone

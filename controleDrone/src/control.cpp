@@ -17,6 +17,8 @@ controller::controller(const ros::NodeHandle& n): nh(n)
     tauyPub = nh.advertise<std_msgs::Float64>("/tauy",2);
     tauzPub = nh.advertise<std_msgs::Float64>("/tauz",2);
     errorQuaterPub = nh.advertise<geometry_msgs::Quaternion>("/errorQuater",2);
+    quaterdesPub = nh.advertise<geometry_msgs::Quaternion>("/quaterdes",2);
+    
 }
 
 void controller::pidgainsCallBack(const std_msgs::Float64MultiArray::ConstPtr& msg)
@@ -93,6 +95,8 @@ void controller::computeGlobalForces()
 	interrz = (interrz<1*kif)?interrz:1*kif;
         interrz = (interrz>-1*kif)?interrz:-1*kif;
 
+
+
 	fx = m*(xdddes + kdf*(xddes-xd) + kpf*(xdes-x));
 	fy = m*(ydddes + kdf*(yddes-yd) + kpf*(ydes-y));
 	fz = m*(zdddes + kdf*(zddes-zd) + kpf*(zdes-z) + kif*(interrz) - G);
@@ -104,7 +108,7 @@ void controller::computeThrust()
     thrust = sqrt(fx*fx + fy*fy + fz*fz);
     thrust = saturation(thrust,2,20);
     thrustMsgOut.data = thrust;
-   // std::cout<<thrust<<std::endl;
+//    std::cout<<"fx="<<fx<<"; fy="<<fy<<"; fz="<<fz<<std::endl;
 }
 
 void controller::computeQdes()
@@ -120,6 +124,12 @@ void controller::computeQdes()
 	
 	R.getRotation(orientation_qdes);
         orientation_qdes_ = orientation_qdes;
+
+	quaterdes.w = orientation_qdes.w();
+	quaterdes.x = orientation_qdes.x();
+	quaterdes.y = orientation_qdes.y();
+	quaterdes.z = orientation_qdes.z();
+	quaterdesPub.publish(quaterdes);
         //std::cout<<"qx="<<orientation_qdes.x()<<"; qy="<<orientation_qdes.y()<<"; qz="<<orientation_qdes.z()<<"; qw="<<orientation_qdes.w()<<std::endl;
 }
 
