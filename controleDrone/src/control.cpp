@@ -210,7 +210,7 @@ int main(int argc, char**argv)
 
 
         int i=0;
-        while(i<(200*20))
+        while(i<(200*3)) //délai avant décollage
         {
             drone.thrustMsgOut.data=3;
             drone.tauxMsgOut.data=0;

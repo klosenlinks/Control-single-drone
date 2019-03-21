@@ -66,13 +66,9 @@ void linkGazebo::sendForce()
     torque.y=tauyMsgIn;
     torque.z=tauzMsgIn;
 
-    //std::cout<<force.x<<" ; "<<force.y<<" ; "<<force.z<<" ; "<<torque.x<<" ; "<<torque.y<<" ; "<<torque.z<<" ; "<<std::endl;
-
     wrench.force=force;
     wrench.torque=torque;
     applyBodyWrench.request.wrench=wrench;
-
-    std::cout<<wrench.force<<std::endl;
 
     applyBodyWrenchClient.call(applyBodyWrench);
 }
