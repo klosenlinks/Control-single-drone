@@ -2,17 +2,18 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Wrench.h>
 #include <geometry_msgs/Vector3.h>
-//#include <duration.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
+
 //gazebo
 #include <gazebo_msgs/ApplyBodyWrench.h>
 #include <gazebo_msgs/GetModelState.h>
 
+//ros
 #include <ros/ros.h>
-#include "stdio.h"
 
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <std_msgs/Float64.h>
+#include "stdio.h"//?
+#include <std_msgs/Float64.h>//
 #include <cmath>//
 #include <tf2/LinearMath/Quaternion.h>//
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>//
@@ -32,12 +33,12 @@ private:
 	std::string reference_frame;
 	geometry_msgs::Point referencePoint;
 
-	//Outputs
+	//Output messages
 	geometry_msgs::Vector3 force;
 	geometry_msgs::Vector3 torque;
 	geometry_msgs::Wrench wrench;	
 
-	//messages
+	//Input messages
 	geometry_msgs::PoseStamped poseMsgOut;
 	geometry_msgs::TwistStamped twistMsgOut;
 
@@ -57,15 +58,15 @@ private:
 	void sendForce();
 	void sendModelState();
 	
-	//Publishers and subscribers
+	//Publishers 
 	ros::Publisher posePub;
 	ros::Publisher twistPub;
 
+	//Subscribers
 	ros::Subscriber thrustSub;
 	ros::Subscriber tauxSub;
 	ros::Subscriber tauySub;
 	ros::Subscriber tauzSub;	
-
 	
 	//Callbacks
 	void thrustCallBack(const std_msgs::Float64::ConstPtr& msg);
@@ -73,8 +74,7 @@ private:
 	void tauyCallBack(const std_msgs::Float64::ConstPtr& msg);
 	void tauzCallBack(const std_msgs::Float64::ConstPtr& msg);
 
-
-	//quaternions
+	//Quaternions
         float q0=1.0;
         float q1=0;
         float q2=0;

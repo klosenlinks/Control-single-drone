@@ -49,7 +49,7 @@ void controller::poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
 	
 	//on récupère la pose du drone
-	poseMsgIn = *msg; //copie de msg dans poseMsgIn
+        poseMsgIn = *msg;
 	x=poseMsgIn.pose.position.x;
 	y=poseMsgIn.pose.position.y;
 	z=poseMsgIn.pose.position.z;
@@ -95,8 +95,6 @@ void controller::computeGlobalForces()
 	interrz = (interrz<1*kif)?interrz:1*kif;
         interrz = (interrz>-1*kif)?interrz:-1*kif;
 
-
-
 	fx = m*(xdddes + kdf*(xddes-xd) + kpf*(xdes-x));
 	fy = m*(ydddes + kdf*(yddes-yd) + kpf*(ydes-y));
 	fz = m*(zdddes + kdf*(zddes-zd) + kpf*(zdes-z) + kif*(interrz) - G);
@@ -108,7 +106,6 @@ void controller::computeThrust()
     thrust = sqrt(fx*fx + fy*fy + fz*fz);
     thrust = saturation(thrust,2,20);
     thrustMsgOut.data = thrust;
-//    std::cout<<"fx="<<fx<<"; fy="<<fy<<"; fz="<<fz<<std::endl;
 }
 
 void controller::computeQdes()
@@ -177,8 +174,6 @@ void controller::computeTorques()
 	tauzMsgOut.data = tauz;
 }
 
-
-
 void controller::sendToDrone()
 {
 // on publie la commande en vitesse angulaire au drone calculée à l'aide de la poussée calculée
@@ -208,7 +203,6 @@ int main(int argc, char**argv)
         controller drone(nh);
         ros::Rate Rate(200);
 
-
         int i=0;
         while(i<(200*3)) //délai avant décollage
         {
@@ -219,9 +213,8 @@ int main(int argc, char**argv)
             drone.sendToDrone();
             Rate.sleep();
             ros::spinOnce();
-            i=i+1;
+            i++;
         }
-
 
         while(ros::ok)
         {
@@ -230,4 +223,3 @@ int main(int argc, char**argv)
                 ros::spinOnce();
         }
 }
-

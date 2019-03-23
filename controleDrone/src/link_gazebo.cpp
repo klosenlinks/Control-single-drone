@@ -5,12 +5,12 @@
 //Construtor
 linkGazebo::linkGazebo(const ros::NodeHandle& n): nh(n)
 {
-    //subscriber
+    //Subscriber
     thrustSub = nh.subscribe("/thrust",2,&linkGazebo::thrustCallBack,this);
     tauxSub = nh.subscribe("/taux",2,&linkGazebo::tauxCallBack,this);
     tauySub = nh.subscribe("/tauy",2,&linkGazebo::tauyCallBack,this);
     tauzSub = nh.subscribe("/tauz",2,&linkGazebo::tauzCallBack,this);
-    //publisher
+    //Publisher
     posePub = nh.advertise<geometry_msgs::PoseStamped>("/pose",2);
     twistPub = nh.advertise<geometry_msgs::TwistStamped>("/twist",2);
 }
@@ -18,7 +18,7 @@ linkGazebo::linkGazebo(const ros::NodeHandle& n): nh(n)
 //Callbacks
 void linkGazebo::thrustCallBack(const std_msgs::Float64::ConstPtr& msg)
 {
-    thrustMsgIn = msg->data; //float
+    thrustMsgIn = msg->data;
 }
 
 void linkGazebo::tauxCallBack(const std_msgs::Float64::ConstPtr& msg)
@@ -50,7 +50,7 @@ void linkGazebo::sendForce()
 
     applyBodyWrench.request.reference_frame ="";//only applies to world frame
 
-    ros::Duration duration(1000000000);
+    ros::Duration duration(1000000000);//must be higher than the gazebo sim time
     applyBodyWrench.request.duration= duration;
 
     //passage du repère du drone au repère monde (à cause de gazebo qui envoie la force que dans le repère monde)
