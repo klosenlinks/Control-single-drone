@@ -1,0 +1,4 @@
+<launch>
+	<node name="controlesm" pkg="controleDrone" type="controlesm" respawn="false" output="screen"/>
+	<node name="modeldyn" pkg="controleDrone" type="modeldyn" respawn="false" output="screen"/>
+</launch>
