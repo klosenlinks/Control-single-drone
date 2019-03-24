@@ -1,7 +1,12 @@
+//ROS
 #include <ros/ros.h>
+
+//Messages
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
+
+//Math
 #include <cmath>
 
 class trajectory{
@@ -17,12 +22,14 @@ private:
 	
 	ros::NodeHandle nh;
 
-	double epsilon = 0.1; // Erreur admissible par rapport aux waypoints
+	//Allowable error
+	double epsilon = 0.1; 
 	
-	//callbacks
+	//Callbacks
 	void desiredPoseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg);
 	void poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg);
-	//messages
+
+	//Messages
 	geometry_msgs::PoseArray pose_array;
 	geometry_msgs::Pose pose_element;
 	geometry_msgs::PoseStamped desiredPoseMsgIn;
@@ -30,17 +37,17 @@ private:
 	geometry_msgs::PoseStamped pose;
 	geometry_msgs::Pose error;
 
-	//subscribers
+	//Subscribers
 	ros::Subscriber desiredPoseSub;
 	ros::Subscriber poseSub;
 
-	//publishers
+	//Publishers
 	ros::Publisher desiredPosePub;
 
-	//compteur
+	//Counter 
 	int cpt=0;
 
-	//functions
+	//Other functions
 	void sendDesiredPose(int cpt);
 };
 

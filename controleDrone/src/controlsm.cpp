@@ -216,29 +216,29 @@ double saturation(double x,double min,double max)
 
 int main(int argc, char**argv)
 {
-        ros::init(argc, argv, "controlsm");
-        ros::NodeHandle nh;
+    ros::init(argc, argv, "controlsm");
+    ros::NodeHandle nh;
 
-        controller drone(nh);
-        ros::Rate Rate(200);
+    controller drone(nh);
+    ros::Rate Rate(200);
 
-        int i=0;
-        while(i<(200*3)) //délai avant décollage
-        {
-            drone.thrustMsgOut.data=3;
-            drone.tauxMsgOut.data=0;
-            drone.tauyMsgOut.data=0;
-            drone.tauzMsgOut.data=0;
-            drone.sendToDrone();
-            Rate.sleep();
-            ros::spinOnce();
-            i++;
-        }
+    int i=0;
+    while(i<(200*3)) //délai avant décollage
+    {
+        drone.thrustMsgOut.data=3;
+        drone.tauxMsgOut.data=0;
+        drone.tauyMsgOut.data=0;
+        drone.tauzMsgOut.data=0;
+        drone.sendToDrone();
+        Rate.sleep();
+        ros::spinOnce();
+        i++;
+    }
 
-        while(ros::ok)
-        {
-                drone.spinController();
-                Rate.sleep();
-                ros::spinOnce();
-        }
+    while(ros::ok)
+    {
+        drone.spinController();
+        Rate.sleep();
+        ros::spinOnce();
+    }
 }

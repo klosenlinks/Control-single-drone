@@ -3,9 +3,10 @@
 
 trajectory::trajectory(const ros::NodeHandle& n): nh(n)
 {
-    //Subscriber
+    //Subscribers
     poseSub = nh.subscribe("/pose",2,&trajectory::poseCallBack,this);
     desiredPoseSub = nh.subscribe("/desiredpose",2,&trajectory::desiredPoseCallBack,this);
+
     //Publisher
     desiredPosePub = nh.advertise<geometry_msgs::PoseStamped>("/desiredpose",2);
 }
@@ -21,7 +22,7 @@ void trajectory::poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
 }
 void trajectory::spin()
 {
-    //si on est assez proche de la position, on passe à la suivante
+    //We compute the error in position and orientation
     error.position.x = desiredPoseMsgIn.pose.position.x - pose.pose.position.x;
     error.position.y = desiredPoseMsgIn.pose.position.y - pose.pose.position.y;
     error.position.z = desiredPoseMsgIn.pose.position.z - pose.pose.position.z;
@@ -31,10 +32,10 @@ void trajectory::spin()
     error.orientation.y = desiredPoseMsgIn.pose.orientation.y - pose.pose.orientation.y;
     error.orientation.z = desiredPoseMsgIn.pose.orientation.z - pose.pose.orientation.z;
 
+    //If we are close enough to the position, we move on to the next one
     if (norm(error) < epsilon)
     {
         sendDesiredPose(cpt);
-        ROS_INFO("Nouveau setpoint");
         cpt++;
         cpt=cpt%(pose_array.poses.size());
     }
@@ -53,9 +54,9 @@ void trajectory::sendDesiredPose(int cpt)
 
 void trajectory::generateTrajectory()
 {
-    //std::cout<<"taille du tableau "<<pose_array.poses.size()<<std::endl;
-    float r=1;
-    //circular sinusoïdal trajectory (you can design your own trajectory)
+    //circular upward and downward trajectory
+    float r=0.5;
+
     for (float i=0; i<2*M_PI; i+=2*M_PI/100 )
     {
         pose_element.position.x = r*(i/3)*cos(i);
@@ -64,7 +65,7 @@ void trajectory::generateTrajectory()
 
         pose_array.poses.push_back(pose_element);
     }
-         //on reboucle
+
          for (float i=2*M_PI; i>0; i-=2*M_PI/100 )
     {
         pose_element.position.x = r*(i/3)*cos(-i);

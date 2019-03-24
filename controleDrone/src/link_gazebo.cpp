@@ -1,16 +1,16 @@
-#include "ros/ros.h"
 #include <link_gazebo.h>
 
 
 //Construtor
 linkGazebo::linkGazebo(const ros::NodeHandle& n): nh(n)
 {
-    //Subscriber
+    //Subscribers
     thrustSub = nh.subscribe("/thrust",2,&linkGazebo::thrustCallBack,this);
     tauxSub = nh.subscribe("/taux",2,&linkGazebo::tauxCallBack,this);
     tauySub = nh.subscribe("/tauy",2,&linkGazebo::tauyCallBack,this);
     tauzSub = nh.subscribe("/tauz",2,&linkGazebo::tauzCallBack,this);
-    //Publisher
+
+    //Publishers
     posePub = nh.advertise<geometry_msgs::PoseStamped>("/pose",2);
     twistPub = nh.advertise<geometry_msgs::TwistStamped>("/twist",2);
 }
@@ -39,25 +39,27 @@ void linkGazebo::tauzCallBack(const std_msgs::Float64::ConstPtr& msg)
 
 void linkGazebo::sendForce()
 {
-    //on crée notre service client pour communiquer avec gazebo
+    //We call the Gazebo service ApplyBodyWrench to send a wrench to our simulation
+
+    //We create our customer service to communicate with Gazebo
     ros::service::waitForService("/gazebo/apply_body_wrench");
 
     applyBodyWrenchClient = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
 
-    //on définit ici les caractéristiques de notre body wrench
-
+    //We define here the characteristics of our body wrench
     applyBodyWrench.request.body_name = "myDrone::base_link";
 
-    applyBodyWrench.request.reference_frame ="";//only applies to world frame
+    applyBodyWrench.request.reference_frame ="";//Only applies to world frame
 
-    ros::Duration duration(1000000000);//must be higher than the gazebo sim time
+    ros::Duration duration(1000000000);//Must be higher than the gazebo sim time
     applyBodyWrench.request.duration= duration;
 
-    //passage du repère du drone au repère monde (à cause de gazebo qui envoie la force que dans le repère monde)
+    //Transition from the drone frame to the world frame
     ax = 2*q0*q2+2*q1*q3;
     ay = -2*q0*q1+2*q2*q3;
     az = q0*q0-q1*q1-q2*q2+q3*q3;
 
+    //We compute the wrench to apply to Gazebo
     force.x=thrustMsgIn*ax;
     force.y=thrustMsgIn*ay;
     force.z=thrustMsgIn*az;
@@ -75,6 +77,8 @@ void linkGazebo::sendForce()
 
 void linkGazebo::sendModelState()
 {
+    //We retrieve the pose and twist calculated by Gazebo so that they can be used by our control nodes
+
     ros::service::waitForService("/gazebo/get_model_state");
     getModelStateClient = nh.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
 
@@ -83,19 +87,19 @@ void linkGazebo::sendModelState()
 
     getModelStateClient.call(getModelState);
 
-    //On récupère l'orientation du drone pour envoyer la force dans le repère monde (pb de gazebo))
+    //We recover the orientation of the drone to send the force into the world frame
     q0=getModelState.response.pose.orientation.w;
     q1=getModelState.response.pose.orientation.x;
     q2=getModelState.response.pose.orientation.y;
     q3=getModelState.response.pose.orientation.z;
 
-    //on publie la pose calculée par Gazebo
+    //we publish the pose calculated by Gazebo
     poseMsgOut.header.stamp = ros::Time::now();
     poseMsgOut.pose = getModelState.response.pose;
 
     posePub.publish(poseMsgOut);
 
-    //on publie le twist calculé par Gazebo
+    //we publish the twist calculated by Gazebo
     twistMsgOut.header.stamp = ros::Time::now();
     twistMsgOut.twist = getModelState.response.twist;
 
@@ -104,18 +108,17 @@ void linkGazebo::sendModelState()
 
 void linkGazebo::spinModel()
 {
-    sendForce(); //On envoie la force calculée par le controller à gazebo
-    sendModelState(); //Gazebo nous renvoie la pose du drone (position et orientation) ainsi que son twist ( vitesse linéaire et angulaire)
+    sendForce();
+    sendModelState();
 }
 
 int main(int argc, char**argv)
 {
     ros::init(argc, argv, "link_gazebo");
     ros::NodeHandle nh;
+    ros::Rate Rate(200);
 
     linkGazebo drone(nh);
-
-    ros::Rate Rate(200);
 
     while(ros::ok)
     {

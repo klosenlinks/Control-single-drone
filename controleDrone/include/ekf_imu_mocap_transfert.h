@@ -3,7 +3,6 @@
 
 #include "ros/ros.h"
 #include <eigen3/Eigen/Dense>
-//#include "HL_ROS_comm.h"
 #include "qualisys/Subject.h"
 
 using namespace Eigen;

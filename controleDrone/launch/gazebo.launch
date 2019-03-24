@@ -10,8 +10,9 @@
 <!-- launch our trajectory node-->
  <node name="trajectory" pkg="controleDrone" type="trajectory" respawn="false" output="screen"/>
 
-<!-- launch our control node-->
+<!-- launch our control node--><!--Unhide the desired control-->
    <node name="controlesimple" pkg="controleDrone" type="controlesimple" respawn="false" output="screen"/>
+   <!--<node name="controlesm" pkg="controleDrone" type="controlesm" respawn="false" output="screen"/>-->
 
 <!-- launch our gazebo node-->
    <node name="link_gazebo" pkg="controleDrone" type="link_gazebo" respawn="false" />

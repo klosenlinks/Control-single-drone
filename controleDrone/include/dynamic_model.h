@@ -1,35 +1,40 @@
+//ROS
 #include <ros/ros.h>
-#include "stdio.h"
-//#include "Eigen/Eigen"
 
+//Messages
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Float64.h>
+
+//Math
 #include <cmath>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+//Gravity constant
+#define G -9.81
 
 class dynamicModel{
+
 public:
 
-	dynamicModel(const ros::NodeHandle& n,float m, float ixx, float iyy, float izz); //constructeur
-	~dynamicModel(){};// destructeur
+	dynamicModel(const ros::NodeHandle& n,float m, float ixx, float iyy, float izz); 
+	~dynamicModel(){};
 	void spinModel();
 
 private:
 	
-	//parameters
 	ros::NodeHandle nh;
+	
+	//Drone parameters
 	float mass;
 	float ixx;
 	float iyy;
 	float izz;
 
 	//Inputs
-	float thrust = 0;
-	float taux = 0;
-	float tauy = 0;
-	float tauz = 0;
+	float thrust=0;
+	float taux=0;
+	float tauy=0;
+	float tauz=0;
 	
 	//Variables and initial values
 	float x=0;
@@ -44,22 +49,16 @@ private:
 	float zd=0;
 	float zdd=0;
 
-	float phi=0;
-	float phid=0;
 	float p=0;
 	float pd=0;
 
-	float theta=0;
-	float thetad=0;
 	float q=0;
 	float qd=0;
 
-	float psi=0;
-	float psid=0;
 	float r=0;
 	float rd=0;
 	
-	//previous values stored for integration	
+	//Previous values stored for integration	
 	float x_=0;
 	float xd_=0;
 	float xdd_=0;
@@ -72,22 +71,16 @@ private:
 	float zd_=0;
 	float zdd_=0;
 
-	float phi_=0;
-	float phid_=0;
 	float p_=0;
 	float pd_=0;
 
-	float theta_=0;
-	float thetad_=0;
 	float q_=0;
 	float qd_=0;
 
-	float psi_=0;
-	float psid_=0;
 	float r_=0;
 	float rd_=0;
 	
-        //quaternions
+        //Quaternion
         float q0=1.0;
         float q1=0;
         float q2=0;
@@ -97,7 +90,8 @@ private:
         float q1_=0;
         float q2_=0;
         float q3_=0;
-
+	
+	//Quaternion derivatives
         float q0d=0;
         float q1d=0;
         float q2d=0;
@@ -110,30 +104,23 @@ private:
 
 	//Rotation matrix
 	//We only need the last column (ax,ay,az) here
-	float ax = 0;
-	float ay = 0;
-	float az = 0;
-	
-	//Orientation
-	tf2::Quaternion orientation;	
+	float ax=0;
+	float ay=0;
+	float az=0;
 
-	//Publishers and subscribers
+	//Publishers 
 	ros::Publisher posePub;
 	ros::Publisher twistPub;
 
+	//Subscribers
 	ros::Subscriber thrustSub;
 	ros::Subscriber tauxSub;
 	ros::Subscriber tauySub;
 	ros::Subscriber tauzSub;	
 
-	//messages
+	//Messages
 	geometry_msgs::PoseStamped poseMsgOut;
 	geometry_msgs::TwistStamped twistMsgOut;
-
-	std_msgs::Float64 thrustMsgIn;//
-	std_msgs::Float64 tauxMsgIn;//
-	std_msgs::Float64 tauyMsgIn;//
-	std_msgs::Float64 tauzMsgIn;//
 	
 	//Callbacks
 	void thrustCallBack(const std_msgs::Float64::ConstPtr& msg);
@@ -147,6 +134,4 @@ private:
 	void computeRMatrix();
 	void sendPose();
 	void sendTwist();
-
 };
-

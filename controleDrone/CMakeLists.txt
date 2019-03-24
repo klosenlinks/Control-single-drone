@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   qualisys
   mavros
-	gazebo_msgs ##?
+  gazebo_msgs 
 )
 
 find_package(Eigen3 REQUIRED)
@@ -36,7 +36,6 @@ add_executable(processinputs src/inputs.cpp src/ekf_imu_mocap_transfert)
 add_executable(processoutputs src/outputs.cpp)
 add_executable(link_gazebo src/link_gazebo.cpp)
 add_executable(trajectory src/trajectory.cpp)
-## add_executable(setpoint_publisher src/desiredposepub.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(modeldyn
@@ -60,7 +59,3 @@ target_link_libraries(link_gazebo
 target_link_libraries(trajectory
    ${catkin_LIBRARIES}
  )
-##target_link_libraries(setpoint_publisher
-##   ${catkin_LIBRARIES}
-## )
-
