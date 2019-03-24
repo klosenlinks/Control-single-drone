@@ -54,7 +54,7 @@ void trajectory::sendDesiredPose(int cpt)
 void trajectory::generateTrajectory()
 {
     //std::cout<<"taille du tableau "<<pose_array.poses.size()<<std::endl;
-    float r=0.5;
+    float r=1;
     //circular sinusoïdal trajectory (you can design your own trajectory)
     for (float i=0; i<2*M_PI; i+=2*M_PI/100 )
     {
@@ -67,8 +67,8 @@ void trajectory::generateTrajectory()
          //on reboucle
          for (float i=2*M_PI; i>0; i-=2*M_PI/100 )
     {
-        pose_element.position.x = r*(i/3)*cos(i);
-        pose_element.position.y = r*(i/3)*sin(i);
+        pose_element.position.x = r*(i/3)*cos(-i);
+        pose_element.position.y = r*(i/3)*sin(-i);
         pose_element.position.z = i/2;
 
         pose_array.poses.push_back(pose_element);
