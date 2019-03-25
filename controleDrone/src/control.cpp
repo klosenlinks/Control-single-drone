@@ -41,7 +41,7 @@ void controller::pidgainsCallBack(const std_msgs::Float64MultiArray::ConstPtr& m
 
 void controller::desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
-    //We recover the desired pose drone
+    //We recover the desired pose of the drone
     desiredposeMsgIn = *msg;
     xdes=desiredposeMsgIn.pose.position.x;
     ydes=desiredposeMsgIn.pose.position.y;
@@ -50,7 +50,7 @@ void controller::desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr&
 
 void controller::poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
-    //We recover the actual pose drone
+    //We recover the actual drone pose
     poseMsgIn = *msg;
     x=poseMsgIn.pose.position.x;
     y=poseMsgIn.pose.position.y;
@@ -81,11 +81,11 @@ void controller::computeGlobalForces()
     //We integrate the error
     interrz = 0.005*(errz + errz_)*0.5 + interrz_;
 
-    //We limit the integration so as not to diverge the command
+    //We limit the integration so as not to diverge the command (anti-windup)
     interrz = (interrz<1*kif)?interrz:1*kif;
     interrz = (interrz>-1*kif)?interrz:-1*kif;
 
-    //We compute the force with a PID command
+    //We compute the forces with a PID command
     fx = m*(xdddes + kdf*(xddes-xd) + kpf*(xdes-x));
     fy = m*(ydddes + kdf*(yddes-yd) + kpf*(ydes-y));
     fz = m*(zdddes + kdf*(zddes-zd) + kpf*(zdes-z) + kif*(interrz) - G);
@@ -93,7 +93,7 @@ void controller::computeGlobalForces()
 
 void controller::computeThrust()
 {
-    //We compute the force to reach the desired position
+    //We compute the necessary force to reach the desired position
     thrust = sqrt(fx*fx + fy*fy + fz*fz);
     thrust = saturation(thrust,2,20);
     thrustMsgOut.data = thrust;
@@ -101,7 +101,8 @@ void controller::computeThrust()
 
 void controller::computeQdes()
 {
-    //We calculate a reference frame from our desired force in order to then obtain our desired orientation in the form of a quaternion
+    //the direction of the thrust gives us the desired reference frame of the drone
+    //the x-axis of the drone is arbitrary chosen to match the global x-axis
     dir.setValue(1,0,0);
     zdrone.setValue(fx/thrust,fy/thrust,fz/thrust);
     ydrone = (zdrone.cross(dir)).normalize();
@@ -123,6 +124,7 @@ void controller::computeQdes()
 
 void controller::computeQerr() 
 {
+    //Quaternion error
     errorqx = -(-orientation_qdes.x()*orientation_q.w() +orientation_qdes.w()*orientation_q.x() +orientation_qdes.z()*orientation_q.y() -orientation_qdes.y()*orientation_q.z());
     errorqy = -(-orientation_qdes.y()*orientation_q.w() -orientation_qdes.z()*orientation_q.x() +orientation_qdes.w()*orientation_q.y() +orientation_qdes.x()*orientation_q.z());
     errorqz = -(-orientation_qdes.z()*orientation_q.w() +orientation_qdes.y()*orientation_q.x() -orientation_qdes.x()*orientation_q.y() +orientation_qdes.w()*orientation_q.z());
@@ -136,6 +138,7 @@ void controller::computeQerr()
 
 void controller::computeQddes()
 {
+    //We derive the desired quaternion
     qd1des = (orientation_qdes.w() - orientation_qdes_.w())/0.005;
     qd2des = (orientation_qdes.x() - orientation_qdes_.x())/0.005;
     qd3des = (orientation_qdes.y() - orientation_qdes_.y())/0.005;
@@ -215,7 +218,7 @@ int main(int argc, char**argv)
     controller drone(nh);
 
     int i=0;
-    while(i<(200*3)) //delay before take off
+    while(i<(200*20)) //delay before take off
     {
         drone.sendToDrone(); //We don't send enough thrust for the drone to take off
         Rate.sleep();

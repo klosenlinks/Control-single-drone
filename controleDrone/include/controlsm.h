@@ -131,7 +131,7 @@ private:
 	//sliding mode
 	double m=1.066;//cf masse dynamic_model.cpp
 	double kpf=4; //4
-	double kif=0; //1
+	double kif=1; //1
 	double kdf=4; //4
 	
 	double sx=0;
@@ -143,12 +143,12 @@ private:
 	double Ixx=0.1152;
 	double Iyy=0.1152;
 	double Izz=0.218;
-	double lambda1=0.1;
-	double lambda2=0.1;
-	double lambda3=0.1;
-	double k1=0.2;
-	double k2=0.2;
-	double k3=0.2;
+	double lambda1=4;
+	double lambda2=4;
+	double lambda3=4;
+	double k1=1;
+	double k2=1;
+	double k3=1;
 
 
 	//messages

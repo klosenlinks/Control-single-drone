@@ -5,6 +5,6 @@
 	<include file="$(find qualisys)/launch/qualisys.launch">
 	</include>
 	<node pkg="rosbag" type="record" name="rosbag_record"
-       	args="record -o /home/lo/ECN/Drones/bags /pose /twist /thrust /taux /tauy /tauz /errorQuater /quaterdes" />
+       	args="record -o /home/alexandre/Control-single-drone/bags /pose /twist /thrust /taux /tauy /tauz /errorQuater /quaterdes" />
 
 </launch>

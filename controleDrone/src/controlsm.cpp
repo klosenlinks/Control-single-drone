@@ -71,6 +71,7 @@ void controller::spinController()
 	computeThrust();
 	computeQdes();
 	computeQerr();
+        computeQerrd();
 	computeQddes();
 	computeOmegades();
 	computeSignS();
@@ -168,21 +169,21 @@ void controller::computeOmegades()
 
 void controller::computeSignS()
 {
-	sx = (p - pdes) + lambda1*errorqx;
-	sy = (q - qdes) + lambda2*errorqy;
-	sz = (r - rdes) + lambda3*errorqz;
+        sx = (pdes - p) + lambda1*errorqx;
+        sy = (qdes - q) + lambda2*errorqy;
+        sz = (rdes - r) + lambda3*errorqz;
 
-	signSx = copysign(sx,sx);
-	signSy = copysign(sy,sy);
-	signSz = copysign(sz,sz);
+        signSx = copysign(1,sx); //faire mieux que du bang-bang
+        signSy = copysign(1,sy);
+        signSz = copysign(1,sz);
 }
 
 void controller::computeTorques()
 {
 	
-	taux = 1*Ixx*(-1*lambda1*errorqxd + /*q*r*((Iyy/Izz)-(Izz/Iyy))*/ - k1*signSx);
-	tauy = 1*Iyy*(-1*lambda2*errorqyd + /*p*r*((Ixx/Izz)-(Izz/Ixx))*/ - k2*signSy);
-        tauz = 1*Izz*(-1*lambda3*errorqzd + /*p*q*((Iyy/Ixx)-(Ixx/Iyy))*/ - k3*signSz);
+        taux = 1*Ixx*(1*lambda1*errorqxd + q*r*(Izz-Iyy)/Ixx + k1*signSx);
+        tauy = 1*Iyy*(1*lambda2*errorqyd + p*r*(Ixx-Izz)/Iyy + k2*signSy);
+        tauz = 1*Izz*(1*lambda3*errorqzd + p*q*(Iyy-Ixx)/Izz + k3*signSz);
 
         taux=saturation(taux,-0.5,0.5);
         tauy=saturation(tauy,-0.5,0.5);
@@ -222,7 +223,7 @@ int main(int argc, char**argv)
     controller drone(nh);
     ros::Rate Rate(200);
 
-    int i=0;
+    /*int i=0;
     while(i<(200*3)) //délai avant décollage
     {
         drone.thrustMsgOut.data=3;
@@ -233,7 +234,7 @@ int main(int argc, char**argv)
         Rate.sleep();
         ros::spinOnce();
         i++;
-    }
+    }*/
 
     while(ros::ok)
     {
