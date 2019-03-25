@@ -30,9 +30,9 @@ include_directories(
 )
 
 add_executable(modeldyn src/dynamic_model.cpp)
-add_executable(controlesimple src/control.cpp)
-add_executable(controlesm src/controlsm.cpp)
-add_executable(processinputs src/inputs.cpp src/ekf_imu_mocap_transfert)
+add_executable(controlePID src/controlPID.cpp)
+add_executable(controleSM src/controlSM.cpp)
+add_executable(processinputs src/inputs.cpp src/ekf_imu_mocap_transfert.cpp)
 add_executable(processoutputs src/outputs.cpp)
 add_executable(link_gazebo src/link_gazebo.cpp)
 add_executable(trajectory src/trajectory.cpp)
@@ -41,10 +41,10 @@ add_executable(trajectory src/trajectory.cpp)
 target_link_libraries(modeldyn
    ${catkin_LIBRARIES}
  )
-target_link_libraries(controlesimple
+target_link_libraries(controlePID
    ${catkin_LIBRARIES}
  )
-target_link_libraries(controlesm
+target_link_libraries(controleSM
    ${catkin_LIBRARIES}
  )
 target_link_libraries(processinputs

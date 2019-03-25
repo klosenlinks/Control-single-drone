@@ -22,8 +22,8 @@ class controller{
 
 public:
 
-	controller(const ros::NodeHandle& n); //constructor
-	~controller(){};// destructor
+	controller(const ros::NodeHandle& n); //Constructor
+	~controller(){}; //Destructor
 	void spinController();
         void sendToDrone();
 
@@ -125,16 +125,13 @@ private:
 	//Mass	
 	double m=1.066;
 
-	//PID parameters
-	//You set them in rqt Message Publisher 
+	//PID parameters (You set them in rqt Message Publisher) 
 	double kpf=0; 
 	double kif=0; 
 	double kdf=0; 
 	double kptauxy=0;
-	double kitauxy=0; //unused
 	double kdtauxy=0;
 	double kptauz=0;
-	double kitauz=0; //unused
 	double kdtauz=0;
 
 	//Messages

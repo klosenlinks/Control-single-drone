@@ -1,4 +1,4 @@
-#include "control.h"
+#include "controlPID.h"
 
 
 controller::controller(const ros::NodeHandle& n): nh(n)
@@ -32,11 +32,9 @@ void controller::pidgainsCallBack(const std_msgs::Float64MultiArray::ConstPtr& m
     kif=pidgainsMsgIn.data[1];
     kdf=pidgainsMsgIn.data[2];
     kptauxy=pidgainsMsgIn.data[3];
-    kitauxy=pidgainsMsgIn.data[4]; //unused
-    kdtauxy=pidgainsMsgIn.data[5];
-    kptauz=pidgainsMsgIn.data[6];
-    kitauz=pidgainsMsgIn.data[7]; //unused
-    kdtauz=pidgainsMsgIn.data[8];
+    kdtauxy=pidgainsMsgIn.data[4];
+    kptauz=pidgainsMsgIn.data[5];
+    kdtauz=pidgainsMsgIn.data[6];
 }
 
 void controller::desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
@@ -160,7 +158,7 @@ void controller::computeTorques()
     tauy = kdtauxy*(qdes-q) + kptauxy*errorqy;
     tauz = kdtauz *(rdes-r) + kptauz *errorqz;
 
-    //we saturate the moments so the drone doesn't turn around
+    //We saturate the moments so the drone doesn't turn around
     taux=saturation(taux,-0.5,0.5);
     tauy=saturation(tauy,-0.5,0.5);
     tauz=saturation(tauz,-0.1,0.1);
@@ -211,14 +209,14 @@ double saturation(double x,double min,double max)
 
 int main(int argc, char**argv)
 {
-    ros::init(argc, argv, "control");
+    ros::init(argc, argv, "controlPID");
     ros::NodeHandle nh;
     ros::Rate Rate(200); //200Hz
 
     controller drone(nh);
 
     int i=0;
-    while(i<(200*20)) //delay before take off
+    while(i<(200*3)) //delay before take off
     {
         drone.sendToDrone(); //We don't send enough thrust for the drone to take off
         Rate.sleep();

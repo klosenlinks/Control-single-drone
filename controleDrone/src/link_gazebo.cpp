@@ -13,6 +13,10 @@ linkGazebo::linkGazebo(const ros::NodeHandle& n): nh(n)
     //Publishers
     posePub = nh.advertise<geometry_msgs::PoseStamped>("/pose",2);
     twistPub = nh.advertise<geometry_msgs::TwistStamped>("/twist",2);
+
+    perturbation.x=0;
+    perturbation.y=2;//0.2;
+    perturbation.z=0;
 }
 
 //Callbacks
@@ -37,7 +41,7 @@ void linkGazebo::tauzCallBack(const std_msgs::Float64::ConstPtr& msg)
 }
 
 
-void linkGazebo::sendForce()
+void linkGazebo::sendForce(int i)
 {
     //We call the Gazebo service ApplyBodyWrench to send a wrench to our simulation
 
@@ -60,9 +64,21 @@ void linkGazebo::sendForce()
     az = q0*q0-q1*q1-q2*q2+q3*q3;
 
     //We compute the wrench to apply to Gazebo
-    force.x=thrustMsgIn*ax;
-    force.y=thrustMsgIn*ay;
-    force.z=thrustMsgIn*az;
+    //After 10 sec of simulation, we add a perturbation
+    if(i>200*10)
+    {
+        force.x=thrustMsgIn*ax +perturbation.x;
+        force.y=thrustMsgIn*ay +perturbation.y;
+        force.z=thrustMsgIn*az +perturbation.z;
+    }
+    else
+    {
+        force.x=thrustMsgIn*ax ;
+        force.y=thrustMsgIn*ay ;
+        force.z=thrustMsgIn*az ;
+    }
+
+    //std::cout<<force.y<<std::endl;
 
     torque.x=tauxMsgIn;
     torque.y=tauyMsgIn;
@@ -106,11 +122,45 @@ void linkGazebo::sendModelState()
     twistPub.publish(twistMsgOut);
 }
 
-void linkGazebo::spinModel()
+void linkGazebo::spinModel(int i)
 {
-    sendForce();
+    sendForce(i);
     sendModelState();
 }
+
+/*void linkGazebo::sendPerturbation(double fx,double fy,double fz)
+{
+    //We call the Gazebo service ApplyBodyWrench to send a wrench to our simulation
+
+    //We create our customer service to communicate with Gazebo
+    ros::service::waitForService("/gazebo/apply_body_wrench");
+
+    applyPerturbationClient = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
+
+    //We define here the characteristics of our body wrench
+    applyPerturbation.request.body_name = "myDrone::base_link";
+
+    applyPerturbation.request.reference_frame ="";//Only applies to world frame
+
+    ros::Duration duration(1000000000);//Must be higher than the gazebo sim time
+    applyPerturbation.request.duration= duration;
+
+    //We compute the wrench to apply to Gazebo
+    perturbation.x=fx;
+    perturbation.y=fy;
+    perturbation.z=fz;
+
+      //  std::cout<<applyPerturbation<<std::endl;
+    perturbationTorque.x=0;
+    perturbationTorque.y=0;
+    perturbationTorque.z=0;
+
+    wrench.force=perturbation;
+    wrench.torque=perturbationTorque;
+    applyPerturbation.request.wrench=wrench;
+
+    applyPerturbationClient.call(applyPerturbation);
+}*/
 
 int main(int argc, char**argv)
 {
@@ -120,10 +170,13 @@ int main(int argc, char**argv)
 
     linkGazebo drone(nh);
 
+    int i=0;
     while(ros::ok)
     {
-        drone.spinModel();
+        drone.spinModel(i);
         Rate.sleep();
         ros::spinOnce();
+        i++;
+        //std::cout<<i<<std::endl;
     }
 }
