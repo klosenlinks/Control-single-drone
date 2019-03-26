@@ -21,6 +21,12 @@ private:
 
 	ros::NodeHandle nh;
 
+	//Callbacks
+	void thrustCallBack(const std_msgs::Float64::ConstPtr& msg);
+	void tauxCallBack(const std_msgs::Float64::ConstPtr& msg);
+	void tauyCallBack(const std_msgs::Float64::ConstPtr& msg);
+	void tauzCallBack(const std_msgs::Float64::ConstPtr& msg);
+
 	//Subscribers
 	ros::Subscriber thrustSub;
 	ros::Subscriber tauxSub;
@@ -44,10 +50,6 @@ private:
 	double ld = 0.17;
 
 	//Other functions
-	void thrustCallBack(const std_msgs::Float64::ConstPtr& msg);
-	void tauxCallBack(const std_msgs::Float64::ConstPtr& msg);
-	void tauyCallBack(const std_msgs::Float64::ConstPtr& msg);
-	void tauzCallBack(const std_msgs::Float64::ConstPtr& msg);
 	float max0x(float x);
 };
 

@@ -1,0 +1,19 @@
+<launch>
+	<!-- launch our input node that gives us the drone pose and velocity-->
+	<node name="processinputs" pkg="controleDrone" type="processinputs" respawn="false" output="screen"/>
+
+	<!-- launch our control node-->
+	<node name="controleSM" pkg="controleDrone" type="controleSM" respawn="false" output="screen"/>
+
+	<!-- launch our control node that sends the thrust to the drone-->	
+	<node name="processoutputs" pkg="controleDrone" type="processoutputs" respawn="false" output="screen"/>
+	
+	<!-- launch qualisys node-->	
+	<include file="$(find qualisys)/launch/qualisys.launch">
+	</include>
+
+	<!-- save our results-->
+	<node pkg="rosbag" type="record" name="rosbag_record"
+       	args="record -o $(find controleDrone)/bags/ /desiredpose /pose /twist /thrust /taux /tauy /tauz /errorQuater /quaterdes" />
+
+</launch>

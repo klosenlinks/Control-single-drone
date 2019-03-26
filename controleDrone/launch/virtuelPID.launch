@@ -1,7 +1,0 @@
-<launch>
-	<!-- launch our control node-->
-	<node name="controlePID" pkg="controleDrone" type="controlePID" respawn="false" output="screen"/>
-	
-	<!-- launch our dynamic model node-->
-	<node name="modeldyn" pkg="controleDrone" type="modeldyn" respawn="false" output="screen"/>
-</launch>

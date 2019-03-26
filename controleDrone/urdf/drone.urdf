@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
    <robot name="myDrone">
 
-<!-- On crée un link qui va contenir la masse ainsi que la matrice d'inertie de notre drone-->
+<!-- We create a link that will contain the mass as well as the inertia matrix of our drone-->
      <link name="base_link">
        <visual>
 	 <origin xyz="0 0 0" rpy="0 0 0" />
@@ -21,7 +21,7 @@
          </inertial>
      </link>
 
-<!-- Les 4 link suivants servent juste à l'esthétique du drone (libre à vous de le pimper)-->
+<!-- The following 4 links are just for the aesthetics of the drone (you are free to pimp them)-->
 
      <link name="FL">
        <visual>
@@ -59,7 +59,7 @@
        </visual>
      </link>
 
-<!-- Les joints assurent la liaison entre les link-->
+<!-- The joints ensure the connection between the links-->
      <joint name="base_to_FL" type="fixed">
        <parent link="base_link"/>
        <child link="FL"/>

@@ -20,7 +20,6 @@ public:
 	linkGazebo(const ros::NodeHandle& nh); 
 	~linkGazebo(){};
 	void spinModel(int i);
-	//void sendPerturbation(double fx,double fy,double fz);
 
 private:
 	ros::NodeHandle nh;
@@ -42,7 +41,6 @@ private:
 	
 	//Gazebo messages
 	gazebo_msgs::ApplyBodyWrench applyBodyWrench;
-        //gazebo_msgs::ApplyBodyWrench applyPerturbation;
 	gazebo_msgs::GetModelState getModelState;
 
 	geometry_msgs::Vector3 force;
@@ -50,11 +48,9 @@ private:
 	geometry_msgs::Wrench wrench;
 
         geometry_msgs::Vector3 perturbation;
-	//geometry_msgs::Vector3 perturbationTorque;
 
 	//Services
 	ros::ServiceClient applyBodyWrenchClient;
-        //ros::ServiceClient applyPerturbationClient;
 	ros::ServiceClient getModelStateClient;
 	
 	//Publishers 

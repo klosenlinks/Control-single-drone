@@ -5,6 +5,7 @@
 
 void mocapCallBack(const qualisys::Subject::ConstPtr& msg)
 {
+    //Send the information from qualisys to the Kalman filter
     mocapMsgIn = *msg;
 
     kalmann.ekfUpdate(mocapMsgIn);
@@ -32,6 +33,7 @@ void mocapCallBack(const qualisys::Subject::ConstPtr& msg)
 
 void imuCallBack(const sensor_msgs::Imu::ConstPtr& msg)
 {
+    //Send the information from the drone IMU to the Kalman filter
     imuMsgIn = *msg;
 
     imustate.Accxyz[0] = imuMsgIn.linear_acceleration.x;

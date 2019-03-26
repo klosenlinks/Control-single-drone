@@ -2,7 +2,7 @@
 <package format="2">
 
   <name>controleDrone</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>The controleDrone package</description>
   
   <maintainer email="laurent.frering@gmail.com">laurent</maintainer>

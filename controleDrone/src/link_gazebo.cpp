@@ -14,8 +14,8 @@ linkGazebo::linkGazebo(const ros::NodeHandle& n): nh(n)
     posePub = nh.advertise<geometry_msgs::PoseStamped>("/pose",2);
     twistPub = nh.advertise<geometry_msgs::TwistStamped>("/twist",2);
 
-    perturbation.x=0;
-    perturbation.y=2;//0.2;
+    perturbation.x=6;
+    perturbation.y=5;
     perturbation.z=0;
 }
 
@@ -53,9 +53,9 @@ void linkGazebo::sendForce(int i)
     //We define here the characteristics of our body wrench
     applyBodyWrench.request.body_name = "myDrone::base_link";
 
-    applyBodyWrench.request.reference_frame ="";//Only applies to world frame
+    applyBodyWrench.request.reference_frame ="";//Only applies to world frame :/
 
-    ros::Duration duration(1000000000);//Must be higher than the gazebo sim time
+    ros::Duration duration(1000000000);//Must be higher than the gazebo sim time (don't ask me why ¯\_(ツ)_/¯ )
     applyBodyWrench.request.duration= duration;
 
     //Transition from the drone frame to the world frame
@@ -64,21 +64,25 @@ void linkGazebo::sendForce(int i)
     az = q0*q0-q1*q1-q2*q2+q3*q3;
 
     //We compute the wrench to apply to Gazebo
-    //After 10 sec of simulation, we add a perturbation
-    if(i>200*10)
+    if(i<200*10)
     {
-        force.x=thrustMsgIn*ax +perturbation.x;
-        force.y=thrustMsgIn*ay +perturbation.y;
-        force.z=thrustMsgIn*az +perturbation.z;
+        force.x=thrustMsgIn*ax;
+        force.y=thrustMsgIn*ay;
+        force.z=thrustMsgIn*az;
+    }
+    //After 10 sec of simulation, we add some perturbations
+    else if(i>200*10 && i<200*20)
+    {
+        force.x=thrustMsgIn*ax;
+        force.y=thrustMsgIn*ay + perturbation.y;
+        force.z=thrustMsgIn*az ;
     }
     else
     {
-        force.x=thrustMsgIn*ax ;
-        force.y=thrustMsgIn*ay ;
+        force.x=thrustMsgIn*ax + perturbation.x;
+        force.y=thrustMsgIn*ay + perturbation.y + 0.0005*i;
         force.z=thrustMsgIn*az ;
     }
-
-    //std::cout<<force.y<<std::endl;
 
     torque.x=tauxMsgIn;
     torque.y=tauyMsgIn;
@@ -109,13 +113,13 @@ void linkGazebo::sendModelState()
     q2=getModelState.response.pose.orientation.y;
     q3=getModelState.response.pose.orientation.z;
 
-    //we publish the pose calculated by Gazebo
+    //We publish the pose calculated by Gazebo
     poseMsgOut.header.stamp = ros::Time::now();
     poseMsgOut.pose = getModelState.response.pose;
 
     posePub.publish(poseMsgOut);
 
-    //we publish the twist calculated by Gazebo
+    //We publish the twist calculated by Gazebo
     twistMsgOut.header.stamp = ros::Time::now();
     twistMsgOut.twist = getModelState.response.twist;
 
@@ -127,40 +131,6 @@ void linkGazebo::spinModel(int i)
     sendForce(i);
     sendModelState();
 }
-
-/*void linkGazebo::sendPerturbation(double fx,double fy,double fz)
-{
-    //We call the Gazebo service ApplyBodyWrench to send a wrench to our simulation
-
-    //We create our customer service to communicate with Gazebo
-    ros::service::waitForService("/gazebo/apply_body_wrench");
-
-    applyPerturbationClient = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
-
-    //We define here the characteristics of our body wrench
-    applyPerturbation.request.body_name = "myDrone::base_link";
-
-    applyPerturbation.request.reference_frame ="";//Only applies to world frame
-
-    ros::Duration duration(1000000000);//Must be higher than the gazebo sim time
-    applyPerturbation.request.duration= duration;
-
-    //We compute the wrench to apply to Gazebo
-    perturbation.x=fx;
-    perturbation.y=fy;
-    perturbation.z=fz;
-
-      //  std::cout<<applyPerturbation<<std::endl;
-    perturbationTorque.x=0;
-    perturbationTorque.y=0;
-    perturbationTorque.z=0;
-
-    wrench.force=perturbation;
-    wrench.torque=perturbationTorque;
-    applyPerturbation.request.wrench=wrench;
-
-    applyPerturbationClient.call(applyPerturbation);
-}*/
 
 int main(int argc, char**argv)
 {
@@ -177,6 +147,5 @@ int main(int argc, char**argv)
         Rate.sleep();
         ros::spinOnce();
         i++;
-        //std::cout<<i<<std::endl;
     }
 }

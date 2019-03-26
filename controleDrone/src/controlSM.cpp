@@ -7,30 +7,19 @@ controller::controller(const ros::NodeHandle& n): nh(n)
     poseSub = nh.subscribe("/pose",2,&controller::poseCallBack,this);
     desiredposeSub = nh.subscribe("/desiredpose",2,&controller::desiredposeCallBack,this);
     twistSub = nh.subscribe("/twist",2,&controller::twistCallBack,this);
-    pidgainsSub = nh.subscribe("/pidgains",2,&controller::pidgainsCallBack,this);
+    //pidgainsSub = nh.subscribe("/pidgains",2,&controller::pidgainsCallBack,this);
 
     //Publishers
     thrustPub = nh.advertise<std_msgs::Float64>("/thrust",2);
     tauxPub = nh.advertise<std_msgs::Float64>("/taux",2);
     tauyPub = nh.advertise<std_msgs::Float64>("/tauy",2);
     tauzPub = nh.advertise<std_msgs::Float64>("/tauz",2);
-    errorQuaterPub = nh.advertise<geometry_msgs::Quaternion>("/errorQuater",2);
-    quaterdesPub = nh.advertise<geometry_msgs::Quaternion>("/quaterdes",2);
-    
+
     //Initialization of the wrench before take off
     thrustMsgOut.data=3;
     tauxMsgOut.data=0;
     tauyMsgOut.data=0;
     tauzMsgOut.data=0;
-}
-
-void controller::pidgainsCallBack(const std_msgs::Float64MultiArray::ConstPtr& msg)
-{
-    pidgainsMsgIn = *msg;
-
-    //kpf=pidgainsMsgIn.data[0];
-    //kif=pidgainsMsgIn.data[1];
-    //kdf=pidgainsMsgIn.data[2];
 }
 
 void controller::desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg)
@@ -64,25 +53,37 @@ void controller::twistCallBack(const geometry_msgs::TwistStamped::ConstPtr& msg)
     r=twistMsgIn.twist.angular.z;
 }
 
-
 void controller::computeGlobalForces()
 {
     //We save our previous error values
+    errx_ = errx;
+    interrx_ = interrx;
+    erry_ = erry;
+    interry_ = interry;
     errz_ = errz;
     interrz_ = interrz;
 
-    //We compute the error on z axis
+    //We compute the error
+    errx = xdes-x;
+    erry = ydes-y;
     errz = zdes-z;
+
     //We integrate the error
+    interrx = 0.005*(errx + errx_)*0.5 + interrx_;
+    interry = 0.005*(erry + erry_)*0.5 + interry_;
     interrz = 0.005*(errz + errz_)*0.5 + interrz_;
 
     //We limit the integration so as not to diverge the command (anti-windup)
-    interrz = (interrz<1*kif)?interrz:1*kif;
-    interrz = (interrz>-1*kif)?interrz:-1*kif;
+    interrx = (interrx<5*kif)?interrx:5*kif;
+    interrx = (interrx>-5*kif)?interrx:-5*kif;
+    interry = (interry<5*kif)?interry:5*kif;
+    interry = (interry>-5*kif)?interry:-5*kif;
+    interrz = (interrz<5*kif)?interrz:5*kif;
+    interrz = (interrz>-5*kif)?interrz:-5*kif;
 
     //We compute the forces with a PID command
-    fx = m*(xdddes + kdf*(xddes-xd) + kpf*(xdes-x));
-    fy = m*(ydddes + kdf*(yddes-yd) + kpf*(ydes-y));
+    fx = m*(xdddes + kdf*(xddes-xd) + kpf*(xdes-x) + kif*(interrx));
+    fy = m*(ydddes + kdf*(yddes-yd) + kpf*(ydes-y) + kif*(interry));
     fz = m*(zdddes + kdf*(zddes-zd) + kpf*(zdes-z) + kif*(interrz) - G);
 }
 
@@ -109,12 +110,6 @@ void controller::computeQdes()
     //We convert the rotation matrix to a quaternion
     R.getRotation(orientation_qdes);
     orientation_qdes_ = orientation_qdes;
-
-    quaterdes.w = orientation_qdes.w();
-    quaterdes.x = orientation_qdes.x();
-    quaterdes.y = orientation_qdes.y();
-    quaterdes.z = orientation_qdes.z();
-    quaterdesPub.publish(quaterdes);
 }
 
 void controller::computeQerr() 
@@ -128,12 +123,6 @@ void controller::computeQerr()
     errorqx = -(-orientation_qdes.x()*orientation_q.w() +orientation_qdes.w()*orientation_q.x() +orientation_qdes.z()*orientation_q.y() -orientation_qdes.y()*orientation_q.z());
     errorqy = -(-orientation_qdes.y()*orientation_q.w() -orientation_qdes.z()*orientation_q.x() +orientation_qdes.w()*orientation_q.y() +orientation_qdes.x()*orientation_q.z());
     errorqz = -(-orientation_qdes.z()*orientation_q.w() +orientation_qdes.y()*orientation_q.x() -orientation_qdes.x()*orientation_q.y() +orientation_qdes.w()*orientation_q.z());
-
-    //We publish the error in quaternion to visualize it on rqt_plot
-    errorQuater.x=errorqx;
-    errorQuater.y=errorqy;
-    errorQuater.z=errorqz;
-    errorQuaterPub.publish(errorQuater);
 }
 
 void controller::computeQerrd()
@@ -169,7 +158,7 @@ void controller::computeSignS()
     sz = (rdes-r) + lambda3*errorqz;
 
     //We recover the sign of the variables
-    signSx = copysign(1,sx); //faire mieux que du bang-bang
+    signSx = copysign(1,sx);
     signSy = copysign(1,sy);
     signSz = copysign(1,sz);
 }

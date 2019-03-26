@@ -4,9 +4,7 @@
 //Messages
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Float64.h>
-#include <std_msgs/Float64MultiArray.h>
 
 //Math
 #include <cmath>
@@ -47,14 +45,11 @@ private:
 	ros::Publisher tauxPub;
 	ros::Publisher tauyPub;
 	ros::Publisher tauzPub;
-	ros::Publisher errorQuaterPub;
-	ros::Publisher quaterdesPub;
 
 	//Subscribers
 	ros::Subscriber poseSub;
 	ros::Subscriber twistSub;
 	ros::Subscriber desiredposeSub;
-	ros::Subscriber pidgainsSub;
 
 	//Measures obtained from subscribers
 	//Orientation
@@ -75,10 +70,18 @@ private:
 	double r = 0;
 	
 	//Error values and integrals
+	double errx=0;
+	double interrx=0;
+	double erry=0;
+	double interry=0;
 	double errz=0;
 	double interrz=0;
 
 	//Previous values used for integration
+	double errx_=0;
+	double interrx_=0;
+	double erry_=0;
+	double interry_=0;
 	double errz_=0;
 	double interrz_=0;
 
@@ -125,28 +128,24 @@ private:
 	//Mass	
 	double m=1.066;
 
-	//PID parameters (You set them in rqt Message Publisher) 
-	double kpf=0; 
-	double kif=0; 
-	double kdf=0; 
-	double kptauxy=0;
-	double kdtauxy=0;
-	double kptauz=0;
-	double kdtauz=0;
+	//PID parameters 
+	double kpf=4; 
+	double kif=1; 
+	double kdf=4; 
+	double kptauxy=8;
+	double kdtauxy=1.2;
+	double kptauz=0.04;
+	double kdtauz=0.04;
 
 	//Messages
 	geometry_msgs::PoseStamped poseMsgIn;
 	geometry_msgs::TwistStamped twistMsgIn;
 	geometry_msgs::PoseStamped desiredposeMsgIn;
-	geometry_msgs::Quaternion errorQuater;	
-	geometry_msgs::Quaternion quaterdes;
-	std_msgs::Float64MultiArray pidgainsMsgIn;
 	
 	//Callbacks
 	void poseCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg);
 	void twistCallBack(const geometry_msgs::TwistStamped::ConstPtr& msg);
 	void desiredposeCallBack(const geometry_msgs::PoseStamped::ConstPtr& msg);
-	void pidgainsCallBack(const std_msgs::Float64MultiArray::ConstPtr& msg);
 
 	//Other functions
 	void computeThrust();

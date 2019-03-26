@@ -18,15 +18,6 @@ struct MOCAP_STATES{
 };
 
 class ekf{
-    private:
-        
-        double dt;
-
-        MatrixXd P;
-        MatrixXd Q;
-        MatrixXd R;
-        int n;
-        short firstInit;
 
     public:
         //bias
@@ -53,6 +44,16 @@ class ekf{
         ~ekf(){};
         void ekfPred(IMU_STATES const &imustate);
         void ekfUpdate(qualisys::Subject mocapstate);
+
+    private:
+        
+        double dt;
+
+        MatrixXd P;
+        MatrixXd Q;
+        MatrixXd R;
+        int n;
+        short firstInit;
 };
 
 #endif
