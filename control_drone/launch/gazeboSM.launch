@@ -1,0 +1,22 @@
+<launch>
+
+	<!-- Launch an empty world into Gazebo-->
+  	<include file="$(find gazebo_ros)/launch/empty_world.launch"></include>
+
+	<!-- Spawn the drone into Gazebo -->
+   	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen" args="-file $(find control_drone)/urdf/drone.urdf -urdf -z 1 -model myDrone"/>
+
+	<!-- launch our trajectory node-->
+	<node name="trajectory" pkg="control_drone" type="trajectory" respawn="false" output="screen"/>
+
+	<!-- launch our control node-->
+   	<node name="controleSM" pkg="control_drone" type="controleSM" respawn="false" output="screen"/>
+
+	<!-- launch our gazebo node-->
+   	<node name="link_gazebo" pkg="control_drone" type="link_gazebo" respawn="false" output="log"/>
+
+	<!-- save our results-->
+   	<node pkg="rosbag" type="record" name="rosbag_record"
+       	args="record -o $(find control_drone)/bags/ /desiredpose /pose /twist /thrust /taux /tauy /tauz " />
+
+</launch>
